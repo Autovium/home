@@ -1,0 +1,501 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+
+export default function PulleySimulator() {
+  const [pulleyType, setPulleyType] = useState('fixed'); // 'fixed' or 'movable'
+  const [weight, setWeight] = useState(100);
+  const [effortWeight, setEffortWeight] = useState(0); // Replaced pulling state with effort weight
+  const [liftPosition, setLiftPosition] = useState(0); // 0 to maxLift dynamically calculated
+  
+  const requestRef = useRef();
+  const velocityRef = useRef(0);
+  const lastTimeRef = useRef();
+  const positionRef = useRef(0);
+
+  // Calculate required effort based on mechanical advantage
+  const requiredEffort = pulleyType === 'fixed' ? weight : weight / 2;
+
+  // Animation loop with Newtonian Physics and Dynamic Boundaries!
+  const animate = useCallback((time) => {
+    // Calculate Delta Time (dt) to keep physics smooth regardless of frame rate
+    if (lastTimeRef.current === undefined) lastTimeRef.current = time;
+    const dt = (time - lastTimeRef.current) / 1000;
+    lastTimeRef.current = time;
+    
+    const safeDt = Math.min(dt, 0.05); 
+    
+    let a = 0; // Acceleration
+    const g = 400; // Gravity scaling factor for pixels
+
+    if (weight + effortWeight > 0) {
+      if (pulleyType === 'fixed') {
+        a = g * (effortWeight - weight) / (weight + effortWeight);
+      } else {
+        a = g * (2 * effortWeight - weight) / (weight + 4 * effortWeight);
+      }
+    }
+
+    // Apply acceleration to velocity (v = v0 + at)
+    velocityRef.current += a * safeDt;
+    velocityRef.current *= 0.98; // Friction
+
+    // Dynamic Collision Boundaries
+    const platformY = 330;
+    const handBaseY = 80; // Starting height for effort rope
+    const currentLoadHeight = 30 + weight * 0.3;
+    const currentEffortHeight = 30 + effortWeight * 0.3;
+    
+    // Constraint 1: Load Box hits the ceiling pulley
+    const loadCeilingDist = platformY - currentLoadHeight - 80; 
+    
+    // Constraint 2: Effort Box hits the ground platform
+    const maxRopePull = platformY - handBaseY - currentEffortHeight;
+    const effortFloorDist = pulleyType === 'fixed' ? maxRopePull : maxRopePull / 2;
+    
+    // The true maximum lift is whichever collision happens first!
+    const maxLift = Math.max(0, Math.min(loadCeilingDist, effortFloorDist));
+
+    // Calculate new position (p = p0 + vt)
+    let newPos = positionRef.current + velocityRef.current * safeDt;
+
+    // Handle Ground and Ceiling Boundaries dynamically
+    if (newPos <= 0) {
+      newPos = 0;
+      if (velocityRef.current < 0) velocityRef.current = 0; 
+    } else if (newPos >= maxLift) {
+      newPos = maxLift;
+      if (velocityRef.current > 0) velocityRef.current = 0; 
+    }
+
+    positionRef.current = newPos;
+    setLiftPosition(newPos);
+
+    requestRef.current = requestAnimationFrame(animate);
+  }, [effortWeight, weight, pulleyType]);
+
+  useEffect(() => {
+    requestRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(requestRef.current);
+  }, [animate]);
+
+  // Coordinates and Math for SVG
+  const platformY = 330;
+  const handBaseY = 80; // Raised starting height to give more drop distance
+  
+  const loadBoxHeight = 30 + weight * 0.3; 
+  const effortBoxHeight = 30 + effortWeight * 0.3;
+
+  // Instead of a fixed box base, we calculate the top of the box so it rests on the platform
+  const currentBoxY = platformY - loadBoxHeight - liftPosition;
+  
+  // Hand moves down as box moves up. Movable pulls 2x rope.
+  const ropePulledDistance = pulleyType === 'fixed' ? liftPosition : liftPosition * 2;
+  const currentHandY = handBaseY + ropePulledDistance;
+
+  return (
+    <div className="min-h-screen bg-sky-100 flex items-center justify-center p-4 font-sans text-slate-800">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full overflow-hidden flex flex-col md:flex-row border-4 border-sky-300">
+        
+        {/* Left Side: Canvas + Status */}
+        <div className="w-full md:w-3/5 flex flex-col border-b-4 md:border-b-0 md:border-r-4 border-sky-200">
+          
+          {/* Interactive Canvas */}
+          <div className="relative w-full bg-sky-50 h-[450px] flex items-center justify-center shrink-0">
+            
+            {/* Instructions Overlay */}
+            <div className="absolute top-4 left-4 right-4 bg-white/80 backdrop-blur-sm p-3 rounded-xl shadow-sm text-center border-2 border-sky-100 z-10">
+              <h2 className="text-xl font-bold text-sky-600 mb-1">
+                {pulleyType === 'fixed' ? 'Fixed Pulley System' : 'Movable Pulley System'}
+              </h2>
+            </div>
+
+            {/* SVG Canvas for Simulation */}
+            <svg viewBox="0 0 400 400" className="w-full h-full pt-16">
+              <defs>
+                <pattern id="stripes" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <rect width="10" height="20" fill="#fbbf24" />
+                  <rect x="10" width="10" height="20" fill="#f59e0b" />
+                </pattern>
+                <filter id="shadow">
+                  <feDropShadow dx="2" dy="4" stdDeviation="3" floodOpacity="0.3" />
+                </filter>
+              </defs>
+
+              {/* Ceiling */}
+              <rect x="0" y="0" width="400" height="20" fill="#64748b" />
+              <rect x="0" y="20" width="400" height="5" fill="#475569" />
+
+              {/* Resting Platform (Now Centered Wide) */}
+              <g>
+                <rect x="90" y={platformY} width="220" height="8" rx="4" fill="#64748b" filter="url(#shadow)" />
+                <rect x="110" y={platformY + 8} width="180" height="62" fill="#94a3b8" />
+              </g>
+
+              {/* --- FIXED PULLEY DRAWING --- */}
+              {pulleyType === 'fixed' && (
+                <g>
+                  {/* Ceiling Mount */}
+                  <rect x="190" y="20" width="20" height="30" fill="#94a3b8" />
+                  <circle cx="200" cy="50" r="5" fill="#475569" />
+                  
+                  {/* Rope (Left side to Box) */}
+                  <line x1="175" y1="50" x2="175" y2={currentBoxY} stroke="#d4d4d8" strokeWidth="6" />
+                  
+                  {/* Rope (Right side to Hand) */}
+                  <line x1="225" y1="50" x2="225" y2={currentHandY} stroke="#d4d4d8" strokeWidth="6" />
+                  
+                  {/* Pulley Wheel */}
+                  <circle cx="200" cy="50" r="25" fill="#e2e8f0" stroke="#64748b" strokeWidth="6" filter="url(#shadow)" />
+                  <circle cx="200" cy="50" r="10" fill="#94a3b8" />
+                </g>
+              )}
+
+              {/* --- MOVABLE PULLEY DRAWING --- */}
+              {pulleyType === 'movable' && (
+                <g>
+                  {/* Ceiling Anchor for Rope */}
+                  <rect x="140" y="20" width="20" height="15" fill="#94a3b8" />
+                  
+                  {/* Ceiling Mount for Fixed Pulley */}
+                  <rect x="240" y="20" width="20" height="30" fill="#94a3b8" />
+
+                  {/* Rope 1: Ceiling to Movable Left */}
+                  <line x1="150" y1="35" x2="150" y2={currentBoxY - 35} stroke="#d4d4d8" strokeWidth="6" />
+                  
+                  {/* Rope 2: Movable Right to Fixed Left */}
+                  <line x1="200" y1={currentBoxY - 35} x2="225" y2="50" stroke="#d4d4d8" strokeWidth="6" />
+                  
+                  {/* Rope 3: Fixed Right to Hand */}
+                  <line x1="275" y1="50" x2="275" y2={currentHandY} stroke="#d4d4d8" strokeWidth="6" />
+
+                  {/* Movable Pulley Wheel (Attached to box) */}
+                  <circle cx="175" cy={currentBoxY - 35} r="25" fill="#e2e8f0" stroke="#64748b" strokeWidth="6" filter="url(#shadow)" />
+                  <circle cx="175" cy={currentBoxY - 35} r="10" fill="#94a3b8" />
+                  <rect x="165" y={currentBoxY - 35} width="20" height="35" fill="#94a3b8" />
+
+                  {/* Fixed Pulley Wheel (On ceiling) */}
+                  <circle cx="250" cy="50" r="25" fill="#e2e8f0" stroke="#64748b" strokeWidth="6" filter="url(#shadow)" />
+                  <circle cx="250" cy="50" r="10" fill="#94a3b8" />
+                </g>
+              )}
+
+              {/* --- COMMON ELEMENTS (Box & Hand) --- */}
+              
+              {/* The Load Box */}
+              <g transform={`translate(${pulleyType === 'fixed' ? 155 : 155}, ${currentBoxY})`} filter="url(#shadow)">
+                {/* Box Handle */}
+                <path d="M 10 0 Q 20 -15 30 0" fill="none" stroke="#475569" strokeWidth="6" />
+                {/* Box Body */}
+                <rect x="0" y="0" width="40" height={loadBoxHeight} rx="4" fill="url(#stripes)" stroke="#b45309" strokeWidth="3" />
+                {/* Box Label Background */}
+                <rect x="2" y={loadBoxHeight / 2 - 10} width="36" height="20" rx="2" fill="white" />
+                {/* Box Text */}
+                <text x="20" y={loadBoxHeight / 2 + 4} textAnchor="middle" fontWeight="bold" fontSize="11" fill="#b45309">
+                  {weight} kg
+                </text>
+              </g>
+
+              {/* The Effort Weight Box (Replaced Hand) */}
+              <g transform={`translate(${pulleyType === 'fixed' ? 205 : 255}, ${currentHandY})`} filter="url(#shadow)">
+                {/* Box Hook */}
+                <line x1="20" y1="-10" x2="20" y2="0" stroke="#475569" strokeWidth="6" />
+                
+                {effortWeight > 0 ? (
+                  <>
+                    {/* Dynamic Box Body */}
+                    <rect 
+                      x="0" 
+                      y="0" 
+                      width="40" 
+                      height={effortBoxHeight} 
+                      rx="4" 
+                      fill="#ef4444" 
+                      stroke="#991b1b" 
+                      strokeWidth="3" 
+                    />
+                    {/* Box Label Background */}
+                    <rect x="2" y={effortBoxHeight / 2 - 10} width="36" height="20" rx="2" fill="white" />
+                    {/* Box Text */}
+                    <text 
+                      x="20" 
+                      y={effortBoxHeight / 2 + 4} 
+                      textAnchor="middle" 
+                      fontWeight="bold" 
+                      fontSize="11" 
+                      fill="#991b1b"
+                    >
+                      {effortWeight} kg
+                    </text>
+                  </>
+                ) : (
+                  <text x="20" y="15" textAnchor="middle" fontWeight="bold" fontSize="12" fill="#94a3b8">
+                    Empty
+                  </text>
+                )}
+              </g>
+
+              {/* Rulers for Distance Tracking */}
+              <g opacity="0.8">
+                {/* Load Ruler (Left) */}
+                <g stroke="#64748b">
+                  <line x1="45" y1={platformY} x2="45" y2="70" strokeWidth="2" />
+                  {[0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260].map(val => {
+                    if (platformY - val < 70) return null;
+                    return (
+                      <g key={`load-tick-${val}`} transform={`translate(45, ${platformY - val})`}>
+                        <line x1="0" y1="0" x2={val % 40 === 0 ? "12" : "6"} y2="0" strokeWidth="2" />
+                        {val % 40 === 0 && (
+                          <text x="-8" y="4" textAnchor="end" fill="#64748b" fontSize="12" stroke="none" fontWeight="bold">{val}</text>
+                        )}
+                      </g>
+                    );
+                  })}
+                  <text x="45" y="55" textAnchor="middle" fill="#10b981" fontSize="12" fontWeight="bold">Load Dist.</text>
+                </g>
+
+                {/* Effort Ruler (Right) */}
+                <g stroke="#64748b">
+                  <line x1="355" y1={handBaseY} x2="355" y2={platformY} strokeWidth="2" />
+                  {[0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260].map(val => {
+                    if (handBaseY + val > platformY) return null;
+                    return (
+                      <g key={`effort-tick-${val}`} transform={`translate(355, ${handBaseY + val})`}>
+                        <line x1={val % 40 === 0 ? "-12" : "-6"} y1="0" x2="0" y2="0" strokeWidth="2" />
+                        {val % 40 === 0 && (
+                          <text x="8" y="4" textAnchor="start" fill="#64748b" fontSize="12" stroke="none" fontWeight="bold">{val}</text>
+                        )}
+                      </g>
+                    );
+                  })}
+                  <text x="355" y={handBaseY - 15} textAnchor="middle" fill="#ef4444" fontSize="12" fontWeight="bold">Effort Dist.</text>
+                </g>
+              </g>
+
+              {/* Dynamic Pointer Lines */}
+              <g>
+                {/* Load Pointer (Green) - Points accurately to the BOTTOM of the Load Box */}
+                <line x1="45" y1={platformY - liftPosition} x2={pulleyType === 'fixed' ? 155 : 155} y2={platformY - liftPosition} stroke="#10b981" strokeWidth="2" strokeDasharray="4 4" />
+                <polygon points={`45,${platformY - liftPosition} 55,${platformY - liftPosition - 5} 55,${platformY - liftPosition + 5}`} fill="#10b981" />
+                
+                {/* Effort Pointer (Red) - Points to the TOP hook of the Effort Box to track rope pulled */}
+                <line x1={pulleyType === 'fixed' ? 245 : 295} y1={currentHandY} x2="355" y2={currentHandY} stroke="#ef4444" strokeWidth="2" strokeDasharray="4 4" />
+                <polygon points={`355,${currentHandY} 345,${currentHandY-5} 345,${currentHandY+5}`} fill="#ef4444" />
+              </g>
+            </svg>
+          </div>
+
+          {/* System Status Display (Moved under simulation) */}
+          <div className="bg-sky-100 p-5 md:p-6 shadow-inner z-10 shrink-0">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex-1 w-full">
+                <span className="block text-xs font-bold text-sky-700 uppercase tracking-widest text-center sm:text-left mb-2">System Status</span>
+                <div className="text-xl sm:text-2xl font-black text-center py-3 rounded-xl bg-white shadow-sm border border-sky-200 w-full flex items-center justify-center">
+                  {effortWeight > requiredEffort ? (
+                    <span className="text-green-600">⬆️ Accelerating Up!</span>
+                  ) : effortWeight < requiredEffort ? (
+                    <span className="text-red-500">⬇️ Accelerating Down!</span>
+                  ) : (
+                    <span className="text-blue-500 flex items-center gap-2"><span>⚖️</span> Balanced (No Accel)</span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex-1 flex flex-col items-center sm:items-end justify-center w-full">
+                <div className="text-sm font-bold text-slate-600 text-center sm:text-right">
+                  Required to balance: <span className="text-sky-600 text-xl ml-1">{requiredEffort} kg</span>
+                </div>
+                <div className="text-xs font-medium text-slate-500 mt-2 text-center sm:text-right max-w-xs">
+                  {pulleyType === 'movable' 
+                    ? "Movable pulley cuts the needed weight in half!" 
+                    : "Fixed pulley needs equal weight to balance."}
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Right Side: Control Panel */}
+        <div className="w-full md:w-2/5 p-6 lg:p-8 flex flex-col bg-white overflow-y-auto max-h-[90vh]">
+          
+          <div className="flex-1">
+            <h3 className="text-2xl font-black text-slate-800 mb-6 tracking-tight">Control Panel</h3>
+            
+            {/* Pulley Toggle */}
+            <div className="mb-8">
+              <label className="block text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">
+                1. Choose Setup
+              </label>
+              <div className="flex bg-slate-100 p-1 rounded-xl">
+                <button
+                  onClick={() => setPulleyType('fixed')}
+                  className={`flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all ${
+                    pulleyType === 'fixed' 
+                      ? 'bg-white text-sky-600 shadow-sm ring-1 ring-slate-200' 
+                      : 'text-slate-500 hover:bg-slate-200'
+                  }`}
+                >
+                  Fixed Pulley
+                </button>
+                <button
+                  onClick={() => setPulleyType('movable')}
+                  className={`flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all ${
+                    pulleyType === 'movable' 
+                      ? 'bg-white text-sky-600 shadow-sm ring-1 ring-slate-200' 
+                      : 'text-slate-500 hover:bg-slate-200'
+                  }`}
+                >
+                  Movable Pulley
+                </button>
+              </div>
+            </div>
+
+            {/* Load Weight Buttons (Replaced Slider) */}
+            <div className="mb-8">
+              <label className="flex justify-between text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">
+                <span>2. Adjust Load Weight</span>
+                <span className="text-orange-600 font-black">{weight} kg</span>
+              </label>
+              
+              {/* Add Load Weights */}
+              <div className="grid grid-cols-4 gap-2 mb-2">
+                <button 
+                  onClick={() => setWeight(prev => prev + 1)}
+                  className="bg-orange-100 text-orange-700 hover:bg-orange-200 font-black py-2 rounded-xl shadow-sm border-b-4 border-orange-300 active:border-b-0 active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  +1
+                </button>
+                <button 
+                  onClick={() => setWeight(prev => prev + 10)}
+                  className="bg-orange-100 text-orange-700 hover:bg-orange-200 font-black py-2 rounded-xl shadow-sm border-b-4 border-orange-300 active:border-b-0 active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  +10
+                </button>
+                <button 
+                  onClick={() => setWeight(prev => prev + 25)}
+                  className="bg-orange-100 text-orange-700 hover:bg-orange-200 font-black py-2 rounded-xl shadow-sm border-b-4 border-orange-300 active:border-b-0 active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  +25
+                </button>
+                <button 
+                  onClick={() => setWeight(prev => prev + 50)}
+                  className="bg-orange-100 text-orange-700 hover:bg-orange-200 font-black py-2 rounded-xl shadow-sm border-b-4 border-orange-300 active:border-b-0 active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  +50
+                </button>
+              </div>
+
+              {/* Remove Load Weights */}
+              <div className="grid grid-cols-4 gap-2 mb-3">
+                <button 
+                  onClick={() => setWeight(prev => Math.max(0, prev - 1))}
+                  className="bg-white text-orange-500 border-2 border-orange-100 hover:bg-orange-50 font-bold py-2 rounded-xl shadow-sm active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  -1
+                </button>
+                <button 
+                  onClick={() => setWeight(prev => Math.max(0, prev - 10))}
+                  className="bg-white text-orange-500 border-2 border-orange-100 hover:bg-orange-50 font-bold py-2 rounded-xl shadow-sm active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  -10
+                </button>
+                <button 
+                  onClick={() => setWeight(prev => Math.max(0, prev - 25))}
+                  className="bg-white text-orange-500 border-2 border-orange-100 hover:bg-orange-50 font-bold py-2 rounded-xl shadow-sm active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  -25
+                </button>
+                <button 
+                  onClick={() => setWeight(prev => Math.max(0, prev - 50))}
+                  className="bg-white text-orange-500 border-2 border-orange-100 hover:bg-orange-50 font-bold py-2 rounded-xl shadow-sm active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  -50
+                </button>
+              </div>
+
+              {/* Clear Load Button */}
+              <button 
+                onClick={() => setWeight(0)}
+                className="w-full bg-slate-200 text-slate-600 hover:bg-slate-300 font-black py-2 rounded-xl shadow-sm border-b-4 border-slate-400 active:border-b-0 active:translate-y-1 transition-all text-[11px] sm:text-sm flex items-center justify-center uppercase tracking-wider"
+              >
+                Clear Load Weight
+              </button>
+            </div>
+
+            {/* Effort Weight Buttons */}
+            <div className="mb-8">
+              <label className="flex justify-between text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">
+                <span>3. Adjust Effort Weights</span>
+                <span className="text-red-600 font-black">{effortWeight} kg</span>
+              </label>
+              
+              {/* Add Weights */}
+              <div className="grid grid-cols-4 gap-2 mb-2">
+                <button 
+                  onClick={() => setEffortWeight(prev => prev + 1)}
+                  className="bg-red-100 text-red-700 hover:bg-red-200 font-black py-2 rounded-xl shadow-sm border-b-4 border-red-300 active:border-b-0 active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  +1
+                </button>
+                <button 
+                  onClick={() => setEffortWeight(prev => prev + 10)}
+                  className="bg-red-100 text-red-700 hover:bg-red-200 font-black py-2 rounded-xl shadow-sm border-b-4 border-red-300 active:border-b-0 active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  +10
+                </button>
+                <button 
+                  onClick={() => setEffortWeight(prev => prev + 25)}
+                  className="bg-red-100 text-red-700 hover:bg-red-200 font-black py-2 rounded-xl shadow-sm border-b-4 border-red-300 active:border-b-0 active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  +25
+                </button>
+                <button 
+                  onClick={() => setEffortWeight(prev => prev + 50)}
+                  className="bg-red-100 text-red-700 hover:bg-red-200 font-black py-2 rounded-xl shadow-sm border-b-4 border-red-300 active:border-b-0 active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  +50
+                </button>
+              </div>
+
+              {/* Remove Weights */}
+              <div className="grid grid-cols-4 gap-2 mb-3">
+                <button 
+                  onClick={() => setEffortWeight(prev => Math.max(0, prev - 1))}
+                  className="bg-white text-red-500 border-2 border-red-100 hover:bg-red-50 font-bold py-2 rounded-xl shadow-sm active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  -1
+                </button>
+                <button 
+                  onClick={() => setEffortWeight(prev => Math.max(0, prev - 10))}
+                  className="bg-white text-red-500 border-2 border-red-100 hover:bg-red-50 font-bold py-2 rounded-xl shadow-sm active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  -10
+                </button>
+                <button 
+                  onClick={() => setEffortWeight(prev => Math.max(0, prev - 25))}
+                  className="bg-white text-red-500 border-2 border-red-100 hover:bg-red-50 font-bold py-2 rounded-xl shadow-sm active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  -25
+                </button>
+                <button 
+                  onClick={() => setEffortWeight(prev => Math.max(0, prev - 50))}
+                  className="bg-white text-red-500 border-2 border-red-100 hover:bg-red-50 font-bold py-2 rounded-xl shadow-sm active:translate-y-1 transition-all text-sm sm:text-base flex items-center justify-center"
+                >
+                  -50
+                </button>
+              </div>
+
+              {/* Clear Button */}
+              <button 
+                onClick={() => setEffortWeight(0)}
+                className="w-full bg-slate-200 text-slate-600 hover:bg-slate-300 font-black py-2 rounded-xl shadow-sm border-b-4 border-slate-400 active:border-b-0 active:translate-y-1 transition-all text-[11px] sm:text-sm flex items-center justify-center uppercase tracking-wider"
+              >
+                Clear All Weights
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
