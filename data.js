@@ -38,16 +38,6 @@ const projectsData = [
         solution: "Developed a wireless monitoring node using ESP32 to log real-time pressure data directly to Google Sheets via HTTP, creating a low-cost, accessible dashboard.",
         outcome: "Provided accurate data for root-cause analysis and sparked a factory-wide initiative for automated data collection.",
         image: "uploads/Image_svinwwsvinwwsvin-1.webp"
-    },
-    {
-        id: "pyrolysis-plant",
-        title: "Pyrolysis Plant Automation",
-        category: "Heavy Industry",
-        theme: { badgeBg: "bg-orange-500 text-white", highlightText: "text-orange-600", highlightBg: "bg-orange-50 border-orange-100" },
-        challenge: "Commissioning a full-scale automation system for a Pyrolysis Plant, requiring robust industrial reliability and complex system integration.",
-        solution: "Developed and commissioned a Siemens S7-1500 PLC architecture with a SCADA system on a Rack PC. Handled full-stack PLC programming, field instrument integration, and rigorous acceptance testing.",
-        outcome: "Successful plant commissioning, ensuring high-availability operation and seamless data visualization.",
-        image: "uploads/WhatsApp-Image-2025-12-19-at-2.09.29-PM-e1766139782873.webp"
     }
 ];
 
