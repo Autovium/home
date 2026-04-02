@@ -357,31 +357,60 @@
         }
 
         // Initialize Everything
+        // Initialize Everything Safely
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Render data arrays to HTML
-            renderProjects();
-            renderRnD();
             
-            // 2. Initialize Lucide Icons
-            lucide.createIcons();
+            // 1. Render data safely
+            try {
+                renderProjects();
+                renderRnD();
+            } catch (error) {
+                console.error("Error rendering projects:", error);
+            }
             
-            // 3. Initialize Animations
-            AOS.init({
-                once: true,
-                offset: 50,
-                duration: 800,
-                easing: 'ease-out-cubic',
-            });
+            // 2. Initialize Icons Safely
+            try {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                } else {
+                    console.warn("Lucide icons failed to load from CDN.");
+                }
+            } catch (error) {
+                console.error("Icon error:", error);
+            }
+            
+            // 3. Initialize Animations Safely
+            try {
+                if (typeof AOS !== 'undefined') {
+                    AOS.init({
+                        once: true,
+                        offset: 50,
+                        duration: 800,
+                        easing: 'ease-out-cubic',
+                    });
+                } else {
+                    console.warn("AOS animations failed to load. Elements might be hidden.");
+                    // Emergency un-hide if AOS fails
+                    document.querySelectorAll('[data-aos]').forEach(el => {
+                        el.style.opacity = '1';
+                        el.style.transform = 'none';
+                    });
+                }
+            } catch (error) {
+                console.error("Animation error:", error);
+            }
 
-            // 4. Navbar Blur Effect on Scroll
+            // 4. Navbar Blur Effect
             window.addEventListener('scroll', () => {
                 const nav = document.getElementById('navbar');
-                if (window.scrollY > 50) {
-                    nav.classList.add('py-4');
-                    nav.classList.remove('pt-6');
-                } else {
-                    nav.classList.add('pt-6');
-                    nav.classList.remove('py-4');
+                if (nav) {
+                    if (window.scrollY > 50) {
+                        nav.classList.add('py-4');
+                        nav.classList.remove('pt-6');
+                    } else {
+                        nav.classList.add('pt-6');
+                        nav.classList.remove('py-4');
+                    }
                 }
             });
         });
