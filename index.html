@@ -1,45 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autovium Technologies | Custom Automation</title>
+    <title>Autovium Technologies | Next-Gen Automation</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        navy: { 100: '#090088', 200: '#02006c', 300: '#010057', 400: '#010048', 500: '#03002e' },
-                        light: '#f4f7f9',
-                        accent: '#ffd700',
-                        emerald: '#0daf75'
+                        base: '#050505',
+                        surface: '#111111',
+                        border: '#222222',
+                        accent: '#10b981', // Emerald
+                        highlight: '#fbbf24', // Amber
                     },
                     animation: {
-                        'blob': 'blob 7s infinite',
+                        'spin-slow': 'spin 15s linear infinite',
                         'float': 'float 6s ease-in-out infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 4s ease-in-out infinite alternate',
                     },
                     keyframes: {
-                        blob: {
-                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
-                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
-                        },
                         float: {
                             '0%, 100%': { transform: 'translateY(0)' },
                             '50%': { transform: 'translateY(-20px)' },
+                        },
+                        glow: {
+                            '0%': { opacity: '0.3', filter: 'blur(40px)' },
+                            '100%': { opacity: '0.6', filter: 'blur(60px)' },
                         }
                     }
                 }
@@ -47,115 +50,297 @@
         }
     </script>
     <style>
-        body { background-color: #f4f7f9; overflow-x: hidden; }
-        .bg-grid {
-            background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
-            background-size: 40px 40px;
+        body { 
+            background-color: #050505; 
+            color: #ededed;
+            overflow-x: hidden;
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.7);
+        
+        /* Modern Noise Overlay */
+        .noise-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            opacity: 0.03;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Subtle Grid Pattern */
+        .grid-pattern {
+            background-image: 
+                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+        }
+
+        /* Glassmorphism Cards */
+        .glass-panel {
+            background: rgba(17, 17, 17, 0.4);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(16, 185, 129, 0.3); /* Emerald border on hover */
+            background: rgba(17, 17, 17, 0.8);
+        }
+
+        /* Gradient Text Reveal */
+        .text-gradient {
+            background: linear-gradient(to right, #fff, #a1a1aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-gradient-accent {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
     </style>
 </head>
-<body class="text-slate-800 antialiased selection:bg-accent selection:text-navy-500">
+<body class="antialiased selection:bg-accent selection:text-base">
+    <div class="noise-bg"></div>
 
-    <header class="relative bg-gradient-to-br from-navy-500 via-navy-400 to-navy-100 text-white overflow-hidden border-b-[6px] border-accent min-h-[85vh] flex items-center">
-        <div class="absolute inset-0 bg-grid pointer-events-none"></div>
-        <div class="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-emerald/30 rounded-full mix-blend-multiply filter blur-[100px] animate-blob opacity-70"></div>
-        <div class="absolute bottom-0 left-10 w-72 h-72 bg-accent/20 rounded-full mix-blend-multiply filter blur-[80px] animate-blob animation-delay-2000 opacity-70"></div>
-        <div class="absolute top-40 left-1/2 w-80 h-80 bg-navy-100/50 rounded-full mix-blend-multiply filter blur-[80px] animate-blob animation-delay-4000 opacity-70"></div>
-        
-        <div class="relative max-w-6xl mx-auto px-6 py-24 z-10 w-full">
-            <div class="flex items-center gap-4 mb-12 animate-float">
-                <div class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 shadow-2xl shadow-accent/20">
-                    <i data-lucide="cpu" class="w-8 h-8 text-accent animate-pulse-slow"></i>
+    <div class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-accent/20 rounded-full mix-blend-screen filter blur-[100px] animate-glow pointer-events-none z-0"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-highlight/10 rounded-full mix-blend-screen filter blur-[120px] animate-glow pointer-events-none z-0" style="animation-delay: 2s;"></div>
+
+    <nav class="fixed w-full z-50 top-0 pt-6 px-6 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto glass-panel rounded-full px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded bg-gradient-to-br from-accent to-highlight flex items-center justify-center text-base">
+                    <i data-lucide="cpu" class="w-5 h-5"></i>
                 </div>
-                <span class="text-2xl md:text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Autovium Technologies</span>
+                <span class="font-display font-bold text-lg tracking-wide text-white">Autovium</span>
             </div>
+            <a href="#contact" class="text-sm font-mono text-white/70 hover:text-accent transition-colors">INITIATE_CONTACT()</a>
+        </div>
+    </nav>
 
-            <div data-aos="fade-up" data-aos-duration="1000" class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-accent px-4 py-1.5 text-xs font-mono mb-8 rounded-full uppercase tracking-widest shadow-lg transition hover:bg-white/20 cursor-default">
+    <header class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden z-10">
+        <div class="absolute inset-0 grid-pattern"></div>
+        
+        <div class="relative max-w-5xl mx-auto px-6 text-center z-10">
+            <div data-aos="fade-down" data-aos-duration="1000" class="inline-flex items-center gap-2 glass-panel px-4 py-2 rounded-full text-xs font-mono text-accent mb-8">
                 <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
-                Simple. Yet Advanced.
+                SYSTEMS ONLINE // READY TO DEPLOY
             </div>
             
-            <h1 data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200" class="text-5xl md:text-7xl font-bold mb-6 leading-[1.1] tracking-tight">
-                Custom Solutions for <br>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald to-[#20d896]">Unique Challenges.</span>
+            <h1 data-aos="zoom-in" data-aos-duration="1200" class="text-6xl md:text-8xl lg:text-9xl font-display font-black tracking-tighter mb-6 leading-none">
+                ENGINEER <br>
+                <span class="text-gradient-accent">THE IMPOSSIBLE.</span>
             </h1>
-            <p data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400" class="text-lg text-white/70 max-w-2xl leading-relaxed font-light">
-                We engineer intelligent automation, machine vision, and custom embedded systems for manufacturing floors that demand absolute precision.
+            
+            <p data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000" class="text-lg md:text-xl text-neutral-400 max-w-2xl mx-auto font-light leading-relaxed mb-10">
+                We design and deploy absolute precision. From machine vision to full-stack industrial automation, we build custom systems for challenges off-the-shelf products can't solve.
             </p>
+            
+            <div data-aos="fade-up" data-aos-delay="400" class="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <a href="#projects" class="group relative px-8 py-4 bg-white text-base font-display font-bold rounded-full overflow-hidden transition-all hover:scale-105">
+                    <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-highlight to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <span class="relative z-10 flex items-center gap-2 group-hover:text-base">View Systems <i data-lucide="arrow-right" class="w-4 h-4"></i></span>
+                </a>
+            </div>
         </div>
     </header>
 
-    <section class="py-12 -mt-16 relative z-20">
-        <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-6">
-            <div data-aos="fade-up" data-aos-delay="100" class="glass-card p-8 rounded-2xl shadow-xl hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald/20 transition-all duration-500 group">
-                <h2 class="text-xl font-bold text-navy-500 mb-3 flex items-center gap-3">
-                    <div class="p-3 bg-emerald/10 rounded-xl group-hover:bg-emerald group-hover:text-white transition-all duration-500">
-                        <i data-lucide="compass" class="text-emerald group-hover:text-white w-6 h-6"></i>
-                    </div>
-                    Our Mission
-                </h2>
-                <p class="text-slate-600 leading-relaxed group-hover:text-slate-800 transition-colors">
-                    We engineer custom solutions for unique manufacturing challenges to bring intelligent precision to critical tasks that require more than just mechanical repetition.
-                </p>
+    <section class="py-32 relative z-10" id="capabilities">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="mb-16" data-aos="fade-right">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-white mb-4">Core Architecture</h2>
+                <p class="text-neutral-500 font-mono text-sm uppercase tracking-widest">Capabilities_Matrix.json</p>
             </div>
 
-            <div data-aos="fade-up" data-aos-delay="300" class="glass-card p-8 rounded-2xl shadow-xl hover:-translate-y-2 hover:shadow-2xl hover:shadow-accent/20 transition-all duration-500 group">
-                <h2 class="text-xl font-bold text-navy-500 mb-3 flex items-center gap-3">
-                    <div class="p-3 bg-accent/10 rounded-xl group-hover:bg-accent group-hover:text-navy-500 transition-all duration-500">
-                        <i data-lucide="target" class="text-accent group-hover:text-navy-500 w-6 h-6"></i>
-                    </div>
-                    Our Vision
-                </h2>
-                <p class="text-slate-600 leading-relaxed group-hover:text-slate-800 transition-colors">
-                    A future where advanced robotics, machine vision, and full-stack industrial automation are accessible, scalable, and reliable for industries of any size.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <section class="py-24">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="flex flex-col items-center text-center mb-20" data-aos="fade-in">
-                <h2 class="text-3xl md:text-4xl font-bold text-navy-500 mb-4 tracking-tight">Engineering Expertise</h2>
-                <div class="w-20 h-1.5 bg-gradient-to-r from-emerald to-accent rounded-full"></div>
-            </div>
-
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div data-aos="zoom-in-up" data-aos-delay="0" class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-2xl hover:shadow-navy-500/10 hover:-translate-y-2 transition-all duration-500 group">
-                    <div class="w-16 h-16 bg-slate-50 text-navy-400 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-navy-500 group-hover:text-accent group-hover:rotate-12 transition-all duration-500 shadow-inner">
-                        <i data-lucide="eye" class="w-8 h-8"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-navy-500 mb-3">Machine Vision</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Smart cameras and sensors for defect detection, visual alignment, and sorting using machine vision & AI.</p>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[250px]">
                 
-                <div data-aos="zoom-in-up" data-aos-delay="150" class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-2xl hover:shadow-navy-500/10 hover:-translate-y-2 transition-all duration-500 group">
-                    <div class="w-16 h-16 bg-slate-50 text-navy-400 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-navy-500 group-hover:text-emerald group-hover:rotate-12 transition-all duration-500 shadow-inner">
-                        <i data-lucide="factory" class="w-8 h-8"></i>
+                <div data-aos="zoom-in" data-aos-delay="0" class="md:col-span-2 md:row-span-2 glass-panel rounded-3xl p-8 flex flex-col justify-end relative overflow-hidden group">
+                    <div class="absolute top-8 right-8 w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                        <i data-lucide="eye" class="w-8 h-8 text-accent"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-navy-500 mb-3">PLC & SCADA</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Full-stack automation using PLC, SCADA architecture, and field instrument integration for heavy industry.</p>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-0"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-3xl font-display font-bold text-white mb-3">Machine Vision & AI</h3>
+                        <p class="text-neutral-400 leading-relaxed">Smart cameras, pixel-level defect detection, and complex visual alignment algorithms operating in real-time.</p>
+                    </div>
                 </div>
 
-                <div data-aos="zoom-in-up" data-aos-delay="300" class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-2xl hover:shadow-navy-500/10 hover:-translate-y-2 transition-all duration-500 group">
-                    <div class="w-16 h-16 bg-slate-50 text-navy-400 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-navy-500 group-hover:text-accent group-hover:rotate-12 transition-all duration-500 shadow-inner">
-                        <i data-lucide="cpu" class="w-8 h-8"></i>
+                <div data-aos="zoom-in" data-aos-delay="100" class="md:col-span-2 glass-panel rounded-3xl p-8 flex flex-col justify-between group">
+                    <i data-lucide="cpu" class="w-8 h-8 text-highlight mb-4 group-hover:rotate-12 transition-transform duration-300"></i>
+                    <div>
+                        <h3 class="text-xl font-display font-bold text-white mb-2">Embedded Systems</h3>
+                        <p class="text-sm text-neutral-400">Custom PCB design and micro-controllers replacing bulky generic PLCs.</p>
                     </div>
-                    <h3 class="text-xl font-bold text-navy-500 mb-3">Embedded Systems</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Custom PCB design and micro-controller boards that eliminate the bulk and expense of generic PLCs.</p>
+                </div>
+
+                <div data-aos="zoom-in" data-aos-delay="200" class="glass-panel rounded-3xl p-8 flex flex-col justify-between group">
+                    <i data-lucide="zap" class="w-8 h-8 text-white mb-4 group-hover:text-accent transition-colors"></i>
+                    <div>
+                        <h3 class="text-xl font-display font-bold text-white mb-2">Power Tech</h3>
+                        <p class="text-sm text-neutral-400">SPWM drivers & inverters.</p>
+                    </div>
+                </div>
+
+                <div data-aos="zoom-in" data-aos-delay="300" class="glass-panel rounded-3xl p-8 flex flex-col justify-between group">
+                    <i data-lucide="factory" class="w-8 h-8 text-white mb-4 group-hover:text-accent transition-colors"></i>
+                    <div>
+                        <h3 class="text-xl font-display font-bold text-white mb-2">SCADA</h3>
+                        <p class="text-sm text-neutral-400">Heavy industry architecture.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="py-24 bg-white border-y border-slate-100 shadow-[inset_0_4px_6px_-1px_rgba(0,0,0,0.02)]">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="mb-20" data-aos="fade-right">
-                <h2 class="text-3xl md:text-5xl font-bold text-navy-500 mb-4 tracking-tight">Project Insights</h2>
-                <p class="text-slate-500 font-medium text-lg border-l-4 border
+    <section class="py-32 relative z-10 bg-black/50 border-y border-white/5" id="projects">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="mb-24 md:text-center" data-aos="fade-up">
+                <h2 class="text-4xl md:text-6xl font-display font-bold text-white mb-4">Deployed Systems</h2>
+                <div class="w-24 h-1 bg-accent mx-auto rounded-full"></div>
+            </div>
+
+            <div class="space-y-32">
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div data-aos="fade-right" class="order-2 md:order-1 relative group">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-accent to-highlight rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                        <div class="relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden glass-panel">
+                            <img src="uploads/Image_oxe55ooxe55ooxe5-e1766483236731.webp" alt="Vision Cutter" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-700">
+                        </div>
+                    </div>
+                    <div data-aos="fade-left" class="order-1 md:order-2 space-y-6">
+                        <div class="inline-block px-3 py-1 rounded-md bg-accent/10 border border-accent/20 text-accent font-mono text-xs">01 / Industrial Automation</div>
+                        <h3 class="text-3xl md:text-4xl font-display font-bold text-white">Vision-Guided Precision Cutter</h3>
+                        <div class="space-y-4">
+                            <p class="text-neutral-400"><strong class="text-white font-mono uppercase text-xs">The Challenge:</strong> Cutting elastic waistbands to precise lengths while compensating for complex material stretch.</p>
+                            <p class="text-neutral-400"><strong class="text-white font-mono uppercase text-xs">The Setup:</strong> Closed-loop system integrating Machine Vision with PID control via Samkoon PLC.</p>
+                        </div>
+                        <div class="p-6 rounded-2xl bg-white/5 border border-white/10 mt-6 backdrop-blur-sm">
+                            <h4 class="text-highlight font-mono text-xs mb-2">RESULT_OUTPUT</h4>
+                            <p class="text-white font-medium">Increased process speed by 100% and improved accuracy by 86%.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div data-aos="fade-right" class="space-y-6">
+                        <div class="inline-block px-3 py-1 rounded-md bg-highlight/10 border border-highlight/20 text-highlight font-mono text-xs">02 / Robotics & CNC</div>
+                        <h3 class="text-3xl md:text-4xl font-display font-bold text-white">Adhesive Dispensing Robot</h3>
+                        <div class="space-y-4">
+                            <p class="text-neutral-400"><strong class="text-white font-mono uppercase text-xs">The Challenge:</strong> Dispensing adhesive dots following complex DXF patterns on a 3-axis Cartesian setup.</p>
+                            <p class="text-neutral-400"><strong class="text-white font-mono uppercase text-xs">The Setup:</strong> Custom controller using Raspberry Pi + ESP32 running FluidNC, parsing DXF directly to G-code.</p>
+                        </div>
+                        <div class="p-6 rounded-2xl bg-white/5 border border-white/10 mt-6 backdrop-blur-sm">
+                            <h4 class="text-accent font-mono text-xs mb-2">RESULT_OUTPUT</h4>
+                            <p class="text-white font-medium">Advanced CNC functionality delivered at a fraction of commercial costs.</p>
+                        </div>
+                    </div>
+                    <div data-aos="fade-left" class="relative group">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-highlight to-accent rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                        <div class="relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden glass-panel">
+                            <img src="uploads/Gemini_Generated_Image_h779ioh779ioh779.webp" alt="Dispensing Robot" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-700">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-32 relative z-10 border-b border-white/5" id="rnd">
+        <div class="max-w-7xl mx-auto px-6">
+             <div class="flex flex-col md:flex-row justify-between items-end mb-16" data-aos="fade-up">
+                <div>
+                    <h2 class="text-4xl md:text-5xl font-display font-bold text-white mb-2 flex items-center gap-4">
+                        <i data-lucide="test-tube-2" class="w-8 h-8 text-accent"></i> Innovation Lab
+                    </h2>
+                    <p class="text-neutral-500 font-mono text-sm">Internal R&D pushing physical limits.</p>
+                </div>
+                <div class="mt-6 md:mt-0 glass-panel px-4 py-2 rounded-md text-xs font-mono text-neutral-300 border-dashed border-white/20">
+                    STATUS: <span class="text-accent animate-pulse">COMPILING</span>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div data-aos="zoom-in" class="glass-panel p-8 rounded-3xl group cursor-crosshair hover:bg-white/5 transition-colors">
+                    <div class="h-48 rounded-2xl overflow-hidden mb-6 relative">
+                        <img src="uploads/Gemini_Generated_Image_wo3k8qwo3k8qwo3k-scaled.webp" class="w-full h-full object-cover mix-blend-luminosity opacity-50 group-hover:mix-blend-normal group-hover:opacity-100 transition-all duration-500">
+                        <div class="absolute inset-0 border border-accent/30 rounded-2xl m-2 pointer-events-none"></div>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold text-white mb-2">High-Dynamic 6-DOF Platform</h3>
+                    <p class="text-sm text-neutral-400 mb-4">Designing a low-inertia Stewart Platform for high-frequency response simulation tasks using belt-actuated linear actuators.</p>
+                </div>
+
+                <div data-aos="zoom-in" data-aos-delay="100" class="glass-panel p-8 rounded-3xl group cursor-crosshair hover:bg-white/5 transition-colors">
+                    <div class="h-48 rounded-2xl overflow-hidden mb-6 relative">
+                        <img src="uploads/Image_ht1t0zht1t0zht11t-e1766488635553.webp" class="w-full h-full object-cover mix-blend-luminosity opacity-50 group-hover:mix-blend-normal group-hover:opacity-100 transition-all duration-500">
+                        <div class="absolute inset-0 border border-highlight/30 rounded-2xl m-2 pointer-events-none"></div>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold text-white mb-2">AI Surface Inspection</h3>
+                    <p class="text-sm text-neutral-400 mb-4">Custom Random Forest Classifier using pixel-level semantic segmentation for quality control on mobile-grade processors.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-32 relative z-10 overflow-hidden" id="contact">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-accent/10 pointer-events-none"></div>
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h2 data-aos="zoom-in" class="text-5xl md:text-7xl font-display font-black text-white mb-8 tracking-tight">
+                STOP GUESSING.<br>
+                <span class="text-gradient-accent">START TESTING.</span>
+            </h2>
+            <p data-aos="fade-up" data-aos-delay="100" class="text-xl text-neutral-400 mb-12 font-light">
+                Engage in a structured Rapid Prototyping Sprint. Validate your custom engineering solution before full-scale production.
+            </p>
+            
+            <div data-aos="fade-up" data-aos-delay="200" class="flex flex-col sm:flex-row justify-center items-center gap-6">
+                <a href="mailto:info@autovium.com" class="w-full sm:w-auto px-10 py-5 bg-white text-base font-display font-bold rounded-full hover:scale-105 transition-transform flex items-center justify-center gap-3">
+                    <i data-lucide="mail" class="w-5 h-5"></i> info@autovium.com
+                </a>
+                <a href="tel:+94771489976" class="w-full sm:w-auto px-10 py-5 glass-panel text-white font-display font-bold rounded-full hover:bg-white/10 transition-colors flex items-center justify-center gap-3">
+                    <i data-lucide="phone" class="w-5 h-5"></i> +94 77 148 9976
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="border-t border-white/5 py-12 relative z-10 bg-base">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3 opacity-50">
+                <i data-lucide="cpu" class="w-5 h-5 text-accent"></i>
+                <span class="font-display font-bold tracking-widest uppercase text-sm">Autovium</span>
+            </div>
+            <p class="text-neutral-600 font-mono text-xs">&copy; 2026 Autovium Technologies. Root access secured.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+        
+        // Initialize Scroll Animations
+        AOS.init({
+            once: true,
+            offset: 50,
+            duration: 800,
+            easing: 'ease-out-cubic',
+        });
+
+        // Navbar Blur Effect on Scroll
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                nav.classList.add('py-4');
+                nav.classList.remove('pt-6');
+            } else {
+                nav.classList.add('pt-6');
+                nav.classList.remove('py-4');
+            }
+        });
+    </script>
+</body>
+</html>
