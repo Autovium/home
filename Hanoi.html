@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Tower of Hanoi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Hide drag ghost element when dragging */
+        .dragging {
+            opacity: 0 !important;
+            transition: none !important;
+        }
+        /* Monochrome OLED LCD glow */
+        .oled-glow {
+            text-shadow: 0 0 8px rgba(34, 211, 238, 0.9);
+        }
+        @keyframes pulse-fast {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+        .animate-pulse-fast {
+            animation: pulse-fast 0.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        /* Monochrome OLED Styling */
+        .oled-screen {
+            background-color: black;
+        }
+        /* Default OLED Text */
+        .oled-text {
+            color: #22d3ee;
+        }
+        /* Selected item: Inverted Colors (Black text on Cyan background) */
+        .oled-selected {
+            background-color: #22d3ee !important;
+            color: black !important;
+        }
+        /* Force cyan for icons unless selected */
+        .oled-icon {
+            color: #22d3ee;
+            fill: none;
+            stroke: currentColor;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-[#1c1c1c] text-slate-200 p-4 md:p-12 font-sans flex items-center justify-center relative">
+
+    <!-- Mount Point -->
+    <div id="app" class="w-full max-w-5xl relative flex flex-col pt-8"></div>
+
+    <script>
+        const DISK_STYLES = [
+            { top: 'bg-[#ff6b6b]', bottom: 'bg-[#e84141]' }, // 1 Red
+            { top: 'bg-[#ffb142]', bottom: 'bg-[#e58e26]' }, // 2 Orange
+            { top: 'bg-[#ffeaa7]', bottom: 'bg-[#f1c40f]' }, // 3 Yellow
+            { top: 'bg-[#55efc4]', bottom: 'bg-[#00b894]' }, // 4 Green
+            { top: 'bg-[#81ecec]', bottom: 'bg-[#00cec9]' }, // 5 Cyan
+            { top: 'bg-[#74b9ff]', bottom: 'bg-[#0984e3]' }, // 6 Blue
+            { top: 'bg-[#a29bfe]', bottom: 'bg-[#6c5ce7]' }, // 7 Purple
+            { top: 'bg-[#fab1a0]', bottom: 'bg-[#e17055]' }  // 8 Pink
+        ];
+
+        const KEYPAD_KEYS = [
+            { id: '1', label: '1' }, { id: '2', label: '2' }, { id: '3', label: '3' }, { id: 'MENU', label: 'MENU' },
+            { id: '4', label: '4' }, { id: '5', label: '5' }, { id: '6', label: '6' }, { id: 'UP', label: '▲' },
+            { id: '7', label: '7' }, { id: '8', label: '8' }, { id: '9', label: '9' }, { id: 'DOWN', label: '▼' },
+            { id: 'CLR', label: 'CLR' }, { id: '0', label: '0' }, { id: 'BACK', label: 'BACK' }, { id: 'OK', label: 'OK' }
+        ];
+
+        const cpuIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 sm:w-10 sm:h-10 text-[#6B3204]"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>`;
+
+        const ICONS = {
+            PLAYER: `<svg viewBox="0 0 24 24" class="oled-icon w-12 h-12 mb-2" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+            DIFFICULTY: `<svg viewBox="0 0 24 24" class="oled-icon w-12 h-12 mb-2" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="18" x2="18" y2="18"/><line x1="9" y1="14" x2="15" y2="14"/><line x1="11" y1="10" x2="13" y2="10"/></svg>`,
+            ASSIST: `<svg viewBox="0 0 24 24" class="oled-icon w-12 h-12 mb-2" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+            HISTORY: `<svg viewBox="0 0 24 24" class="oled-icon w-12 h-12 mb-2" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`
+        };
+
+        let state = {
+            numDisks: 5,
+            pegs: [[], [], []],
+            selectedPeg: null,
+            moves: 0,
+            isWon: false,
+            errorFlash: null,
+            draggedDisk: null,
+            
+            // OLED Logic States
+            oledPage: 'HOME', // HOME, MENU, HISTORY_LIST, HISTORY_DETAIL
+            menuIndex: 0, 
+            historyIndex: 0,
+            timer: 0,
+            timerRunning: false,
+            playerId: '',
+            playerIdSaved: false,
+            trainerAssist: false,
+            trainerId: '',
+            trainerIdSaved: false,
+            history: [],
+            activeKey: null
+        };
+
+        let timerInterval = null;
+
+        const MENU_ITEMS = [
+            { id: 'PLAYER_ID', title: 'PLAYER ID' },
+            { id: 'DIFFICULTY', title: 'DIFF' },
+            { id: 'TRAINER_ASSIST', title: 'ASSIST' },
+            { id: 'TRAINER_ID', title: 'T-ID', condition: (s) => s.trainerAssist },
+            { id: 'HISTORY_ENTRY', title: 'LOGS' }
+        ];
+
+        function getVisibleMenuItems() {
+            return MENU_ITEMS.filter(item => !item.condition || item.condition(state));
+        }
+
+        // --- Logic ---
+
+        function formatTime(s) {
+            const mins = Math.floor(s / 60).toString().padStart(2, '0');
+            const secs = (s % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+
+        function toggleTimer() {
+            if (!state.playerId) {
+                state.errorFlash = 'OLED';
+                render();
+                setTimeout(() => { state.errorFlash = null; render(); }, 600);
+                return;
+            }
+
+            if (state.timerRunning) {
+                clearInterval(timerInterval);
+                state.timerRunning = false;
+            } else {
+                state.timerRunning = true;
+                timerInterval = setInterval(() => {
+                    state.timer++;
+                    const timeEl = document.getElementById('oled-timer');
+                    if (timeEl) timeEl.innerText = formatTime(state.timer);
+                }, 1000);
+            }
+            render();
+        }
+
+        function checkWinCondition() {
+            if (state.pegs[2].length === state.numDisks && state.numDisks > 0 && !state.isWon) {
+                state.isWon = true;
+                if (state.timerRunning) { clearInterval(timerInterval); state.timerRunning = false; }
+                saveHistory('Win');
+                state.oledPage = 'HOME';
+                render();
+            }
+        }
+
+        function saveHistory(status) {
+            state.history.unshift({
+                id: Date.now(),
+                pId: state.playerId || 'GUEST',
+                moves: state.moves,
+                time: state.timer,
+                disks: state.numDisks,
+                trainerMode: state.trainerAssist,
+                trainerId: state.trainerAssist ? state.trainerId : 'N/A',
+                status: status
+            });
+            if(state.history.length > 50) state.history.pop();
+        }
+
+        function resetGame(disks) {
+            if (state.moves > 0 && !state.isWon) saveHistory('Abnd');
+            const initialPeg = Array.from({ length: disks }, (_, i) => disks - i);
+            state.pegs = [initialPeg, [], []];
+            state.selectedPeg = null;
+            state.draggedDisk = null;
+            state.moves = 0;
+            state.isWon = false;
+            state.timer = 0;
+            if (state.timerRunning) { clearInterval(timerInterval); state.timerRunning = false; }
+            render();
+        }
+
+        function handleKeyPress(keyId) {
+            state.activeKey = keyId;
+            render();
+            setTimeout(() => { state.activeKey = null; render(); }, 100);
+
+            if (keyId === 'MENU') {
+                state.oledPage = state.oledPage === 'MENU' ? 'HOME' : 'MENU';
+                if (state.oledPage === 'MENU') state.menuIndex = 0;
+                return render();
+            }
+
+            if (keyId === 'BACK') {
+                if (state.oledPage === 'HISTORY_DETAIL') state.oledPage = 'HISTORY_LIST';
+                else if (state.oledPage === 'HISTORY_LIST') state.oledPage = 'MENU';
+                else if (state.oledPage === 'MENU') state.oledPage = 'HOME';
+                return render();
+            }
+
+            // HOME PAGE
+            if (state.oledPage === 'HOME') {
+                if (keyId === 'OK') toggleTimer();
+                if (keyId === 'CLR') resetGame(state.numDisks); 
+                return render();
+            }
+
+            const visibleMenu = getVisibleMenuItems();
+
+            // MENU CAROUSEL (Circular Scroll)
+            if (state.oledPage === 'MENU') {
+                if (keyId === 'UP') {
+                    state.menuIndex = (state.menuIndex - 1 + visibleMenu.length) % visibleMenu.length;
+                } else if (keyId === 'DOWN') {
+                    state.menuIndex = (state.menuIndex + 1) % visibleMenu.length;
+                } else {
+                    const currentItem = visibleMenu[state.menuIndex];
+                    
+                    if (currentItem.id === 'PLAYER_ID' || currentItem.id === 'TRAINER_ID') {
+                        const isP = currentItem.id === 'PLAYER_ID';
+                        const target = isP ? 'playerId' : 'trainerId';
+                        const savedFlag = isP ? 'playerIdSaved' : 'trainerIdSaved';
+                        
+                        if (/[0-9]/.test(keyId) && state[target].length < 8) {
+                            state[target] += keyId;
+                            state[savedFlag] = false;
+                        } else if (keyId === 'CLR') {
+                            state[target] = state[target].slice(0, -1);
+                            state[savedFlag] = false;
+                        } else if (keyId === 'OK') {
+                            state[savedFlag] = true;
+                        }
+                    } 
+                    else if (currentItem.id === 'DIFFICULTY') {
+                        if (/[3-8]/.test(keyId)) {
+                            state.numDisks = parseInt(keyId);
+                            resetGame(state.numDisks);
+                        }
+                    } 
+                    else if (currentItem.id === 'TRAINER_ASSIST') {
+                        if (keyId === 'OK') state.trainerAssist = !state.trainerAssist;
+                    } 
+                    else if (currentItem.id === 'HISTORY_ENTRY') {
+                        if (keyId === 'OK') {
+                            state.oledPage = 'HISTORY_LIST';
+                            state.historyIndex = 0;
+                        }
+                    }
+                }
+            } 
+            // DEDICATED HISTORY LIST PAGE
+            else if (state.oledPage === 'HISTORY_LIST') {
+                if (state.history.length > 0) {
+                    if (keyId === 'UP') state.historyIndex = (state.historyIndex - 1 + state.history.length) % state.history.length;
+                    else if (keyId === 'DOWN') state.historyIndex = (state.historyIndex + 1) % state.history.length;
+                    else if (keyId === 'OK') state.oledPage = 'HISTORY_DETAIL';
+                }
+                if (keyId === 'CLR') { state.history = []; state.oledPage = 'MENU'; }
+            }
+            // DEDICATED HISTORY DETAIL PAGE
+            else if (state.oledPage === 'HISTORY_DETAIL') {
+                if (keyId === 'UP') state.historyIndex = (state.historyIndex - 1 + state.history.length) % state.history.length;
+                else if (keyId === 'DOWN') state.historyIndex = (state.historyIndex + 1) % state.history.length;
+            }
+
+            render();
+        }
+
+        function executeMove(sourceIndex, targetIndex) {
+            if (!state.playerId) { state.errorFlash = 'OLED'; render(); setTimeout(() => { state.errorFlash = null; render(); }, 600); return false; }
+            if (!state.timerRunning && state.moves > 0 && !state.isWon) { state.errorFlash = 'OLED'; render(); setTimeout(() => { state.errorFlash = null; render(); }, 300); return false; }
+            
+            const sourcePeg = state.pegs[sourceIndex];
+            const targetPeg = state.pegs[targetIndex];
+            const diskToMove = sourcePeg[sourcePeg.length - 1];
+            const targetTopDisk = targetPeg.length > 0 ? targetPeg[targetPeg.length - 1] : null;
+
+            if (targetTopDisk === null || diskToMove < targetTopDisk) {
+                state.pegs[sourceIndex] = sourcePeg.slice(0, -1);
+                state.pegs[targetIndex] = [...targetPeg, diskToMove];
+                state.moves += 1;
+                if (state.moves === 1 && !state.timerRunning) toggleTimer();
+                if (state.oledPage !== 'HOME') state.oledPage = 'HOME';
+                checkWinCondition();
+                render();
+                return true;
+            } else {
+                state.errorFlash = targetIndex;
+                render();
+                setTimeout(() => { state.errorFlash = null; render(); }, 300);
+                return false;
+            }
+        }
+
+        function handlePegClick(pegIndex) {
+            if (state.isWon) return;
+            if (state.selectedPeg === null) {
+                if (state.pegs[pegIndex].length > 0) {
+                    state.selectedPeg = pegIndex;
+                    render();
+                }
+            } else {
+                if (state.selectedPeg === pegIndex) { state.selectedPeg = null; render(); return; }
+                const sourcePeg = state.selectedPeg;
+                state.selectedPeg = null; 
+                executeMove(sourcePeg, pegIndex);
+            }
+        }
+        
+        function handleDragStart(e, pegIndex) {
+            if (state.isWon) { e.preventDefault(); return; }
+            e.dataTransfer.setData('sourcePeg', pegIndex.toString());
+            const topDisk = state.pegs[pegIndex][state.pegs[pegIndex].length - 1];
+            setTimeout(() => {
+                const diskEl = document.getElementById(`disk-${topDisk}`);
+                if(diskEl) diskEl.classList.add('dragging');
+            }, 0);
+        }
+
+        function handleDragEnd(e, diskSize) {
+            const diskEl = document.getElementById(`disk-${diskSize}`);
+            if(diskEl) diskEl.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+
+        function handleDrop(e, targetPegIndex) {
+            e.preventDefault();
+            if (state.isWon) return;
+            const sourcePegIndex = parseInt(e.dataTransfer.getData('sourcePeg'), 10);
+            if (isNaN(sourcePegIndex)) return;
+            state.selectedPeg = null;
+            if (sourcePegIndex !== targetPegIndex) executeMove(sourcePegIndex, targetPegIndex);
+            else render();
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            const minMoves = Math.pow(2, state.numDisks) - 1;
+
+            let html = `<div class="flex justify-between items-end px-6 sm:px-20 h-[320px] relative z-10 w-full mb-[-24px]">`;
+
+            state.pegs.forEach((peg, pegIndex) => {
+                html += `<div onclick="handlePegClick(${pegIndex})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${pegIndex})" class="relative w-1/3 h-full flex flex-col-reverse items-center cursor-pointer group">`;
+                if (state.selectedPeg === pegIndex) html += `<div class="absolute top-0 bottom-[10px] w-full sm:w-[160px] bg-[#2a2a2a] rounded-[24px] -z-20"></div>`;
+                let pegClasses = `absolute bottom-2 w-5 sm:w-6 h-[280px] bg-[#B35F1A] rounded-t-full shadow-[inset_-3px_0_6px_rgba(0,0,0,0.2)] z-10`;
+                if (state.errorFlash === pegIndex) pegClasses += ` bg-red-400 shadow-[0_0_20px_rgba(239,68,68,0.8)]`;
+                html += `<div class="${pegClasses}"></div><div class="absolute inset-0 z-40 rounded-t-xl"></div><div class="relative z-30 flex flex-col-reverse items-center w-full pb-4">`;
+                peg.forEach((diskSize, diskIndex) => {
+                    const isTopDisk = diskIndex === peg.length - 1;
+                    const isTopSelected = state.selectedPeg === pegIndex && isTopDisk;
+                    const widthPercent = 35 + ((diskSize - 1) / (8 - 1)) * 55;
+                    html += `<div id="disk-${diskSize}" ${isTopDisk && !state.isWon ? 'draggable="true"' : ''} ${isTopDisk ? `ondragstart="handleDragStart(event, ${pegIndex})" ondragend="handleDragEnd(event, ${diskSize})"` : ''} class="h-[32px] sm:h-[38px] rounded-[100px] shadow-[0_6px_10px_rgba(0,0,0,0.4)] transition-all duration-300 border-b-2 border-black/20 flex flex-col overflow-hidden relative ${isTopSelected ? 'transform -translate-y-6 scale-[1.03] shadow-[0_15px_25px_rgba(0,0,0,0.5)]' : 'translate-y-0'} ${isTopDisk ? 'cursor-grab active:cursor-grabbing pointer-events-auto' : 'pointer-events-none'}" style="width: ${widthPercent}%"><div class="h-1/2 w-full ${DISK_STYLES[diskSize - 1].top}"></div><div class="h-1/2 w-full ${DISK_STYLES[diskSize - 1].bottom}"></div><div class="absolute top-0 left-0 right-0 h-1/2 bg-white/10 rounded-t-full pointer-events-none"></div></div>`;
+                });
+                html += `</div></div>`;
+            });
+            html += `</div>`;
+
+            // Wood Base
+            const oledError = state.errorFlash === 'OLED';
+            html += `
+                <div class="w-full bg-[#A65B22] rounded-[40px] shadow-[0_30px_60px_rgba(0,0,0,0.8)] border-b-[14px] border-[#814518] relative z-20 flex flex-col overflow-hidden select-none">
+                    <div class="px-8 sm:px-12 py-10 flex flex-col lg:flex-row justify-between items-center w-full gap-8">
+                        
+                        <div class="flex flex-col items-center justify-center opacity-40 pointer-events-none space-y-2 lg:w-1/4">
+                            ${cpuIcon}
+                            <div class="text-[#592801] font-bold text-lg tracking-[0.4em] uppercase text-center">SMART BASE</div>
+                        </div>
+
+                        <!-- Column 2: OLED Screen -->
+                        <div class="bg-[#1A1A1A] p-2 sm:p-3 rounded-2xl shadow-[inset_0_5px_15px_rgba(0,0,0,0.8)] transition-colors duration-300 ${oledError ? 'bg-red-950 shadow-[0_0_20px_rgba(239,68,68,0.4)]' : ''}">
+                            <div class="bg-black rounded-xl p-0.5 border border-[#333]">
+                                <div class="w-[120px] h-[160px] sm:w-[140px] sm:h-[180px] bg-black relative overflow-hidden flex flex-col oled-screen">
+            `;
+
+            const visibleMenu = getVisibleMenuItems();
+            const currentItem = visibleMenu[state.menuIndex];
+            let appContent = '', footerHints = '', navIndicators = '';
+
+            // Navigation Indicators
+            if (state.oledPage === 'MENU' || state.oledPage === 'HISTORY_LIST' || state.oledPage === 'HISTORY_DETAIL') {
+                const total = (state.oledPage === 'MENU') ? visibleMenu.length : state.history.length;
+                const pos = (state.oledPage === 'MENU') ? state.menuIndex : state.historyIndex;
+                navIndicators = `
+                    <div class="absolute top-[22px] left-0 right-0 flex justify-center z-30 pointer-events-none">
+                        <span class="text-[12px] oled-text ${pos === 0 ? 'opacity-10' : 'animate-bounce'}">▲</span>
+                    </div>
+                    <div class="absolute bottom-[22px] left-0 right-0 flex justify-center z-30 pointer-events-none">
+                        <span class="text-[12px] oled-text ${pos === total - 1 ? 'opacity-10' : 'animate-bounce'}">▼</span>
+                    </div>
+                `;
+            }
+
+            if (state.oledPage === 'HOME') {
+                if (state.isWon) {
+                    appContent = `<div class="font-bold text-[18px] mb-2 oled-text oled-glow uppercase">Win!</div><div class="text-[28px] font-bold oled-text oled-glow">${formatTime(state.timer)}</div><div class="text-[12px] mt-2 font-bold oled-text">${state.moves} MV</div>`;
+                    footerHints = `<span class="w-full text-center oled-text">[*] RESET</span>`;
+                } else if (!state.playerId) {
+                    appContent = `<div class="text-[16px] font-bold animate-pulse-fast leading-tight oled-text">NO<br>PLAYER ID</div><div class="text-[10px] mt-4 oled-text opacity-70">SET IN MENU</div>`;
+                    footerHints = `<span class="w-full text-center oled-text">[A] MENU</span>`;
+                } else {
+                    appContent = `<div id="oled-timer" class="text-[34px] font-bold oled-text oled-glow leading-none">${formatTime(state.timer)}</div><div class="text-[14px] mt-3 font-bold oled-text">MV: ${state.moves} / ${minMoves}</div>`;
+                    footerHints = `<span class="oled-text">[A] MENU</span><span class="oled-text">[D] OK</span>`;
+                }
+            } else if (state.oledPage === 'MENU') {
+                if (currentItem.id === 'PLAYER_ID' || currentItem.id === 'TRAINER_ID') {
+                    const isP = currentItem.id === 'PLAYER_ID';
+                    const saved = isP ? state.playerIdSaved : state.trainerIdSaved;
+                    appContent = `${ICONS.PLAYER}<div class="text-[18px] tracking-[0.1em] bg-[#22d3ee22] px-1 py-1 rounded border border-[#22d3ee44] w-full text-center font-black mt-2 oled-text ${saved ? 'font-black' : ''}">${state[isP?'playerId':'trainerId']}${saved ? '' : '<span class="animate-pulse">_</span>'}</div>`;
+                    footerHints = `<span class="oled-text">[#] BACK</span><span class="oled-text">[D] SAVE</span>`;
+                } else if (currentItem.id === 'DIFFICULTY') {
+                    appContent = `${ICONS.DIFFICULTY}<div class="text-[36px] font-black oled-text oled-glow mt-2">${state.numDisks}</div><div class="text-[10px] font-bold oled-text">DISKS</div>`;
+                    footerHints = `<span class="oled-text">[#] BACK</span><span class="oled-text">3-8 SET</span>`;
+                } else if (currentItem.id === 'TRAINER_ASSIST') {
+                    appContent = `${ICONS.ASSIST}<div class="text-[28px] font-black oled-text oled-glow mt-1">${state.trainerAssist ? 'ON' : 'OFF'}</div>`;
+                    footerHints = `<span class="oled-text">[#] BACK</span><span class="oled-text">[D] TOGGLE</span>`;
+                } else if (currentItem.id === 'HISTORY_ENTRY') {
+                    appContent = `${ICONS.HISTORY}<div class="text-[18px] font-black oled-text oled-glow mt-2 uppercase tracking-widest">LOGS</div>`;
+                    footerHints = `<span class="oled-text">[#] BACK</span><span class="oled-text">[D] VIEW</span>`;
+                }
+            } else if (state.oledPage === 'HISTORY_LIST') {
+                appContent = `<div class="w-full h-full flex flex-col pt-1 px-1 overflow-hidden">
+                    ${state.history.length === 0 ? '<div class="text-center mt-12 font-black text-[14px] oled-text">EMPTY</div>' : 
+                    state.history.slice(0, 4).map((h, i) => `
+                    <div class="flex justify-between items-center border-b border-[#22d3ee44] py-[3.5px] text-[10px] font-bold ${i === state.historyIndex % 4 ? 'oled-selected rounded px-1' : 'oled-text ml-1 mr-1'}">
+                        <span class="truncate w-1/3">${h.pId}</span>
+                        <span class="font-black">${h.status[0]}</span>
+                        <span class="text-right w-1/3">${formatTime(h.time)}</span>
+                    </div>`).join('')}</div>`;
+                footerHints = `<span class="oled-text">[#] BACK</span><span class="oled-text">[D] DETAIL</span>`;
+            } else if (state.oledPage === 'HISTORY_DETAIL') {
+                const game = state.history[state.historyIndex];
+                appContent = `
+                    <div class="w-full text-[10px] text-left px-2 space-y-[2px] font-bold leading-tight oled-text">
+                        <div class="text-[12px] border-b border-[#22d3ee44] pb-1 mb-1 flex justify-between font-black uppercase">
+                            <span>${game.status}</span>
+                            <span>#${state.history.length - state.historyIndex}</span>
+                        </div>
+                        <div>PLAYER: ${game.pId}</div>
+                        <div>TIME: ${formatTime(game.time)}</div>
+                        <div>MOVES: ${game.moves}</div>
+                        <div>DIFF: ${game.disks} DISKS</div>
+                        <div class="text-[8px] opacity-80">TRAIN: ${game.trainerId}</div>
+                    </div>
+                `;
+                footerHints = `<span class="w-full text-center oled-text">[#] LIST</span>`;
+            }
+
+            html += `
+                                        <div class="flex flex-col h-full bg-black z-10 font-mono relative border-2 border-[#22d3ee44]">
+                                            ${navIndicators}
+                                            <div class="bg-[#22d3ee] text-black text-center font-black text-[11px] py-1 tracking-widest uppercase truncate px-1">
+                                                ${state.oledPage === 'HOME' ? 'TIMER' : (state.oledPage === 'MENU' ? currentItem.title : (state.oledPage === 'HISTORY_LIST' ? 'LOG LIST' : 'LOG DATA'))}
+                                            </div>
+                                            <div class="flex-1 flex flex-col justify-center items-center px-1 text-center relative">
+                                                ${appContent}
+                                            </div>
+                                            <div class="h-[18px] border-t-2 border-[#22d3ee] text-[8px] flex justify-between px-2 items-center bg-black font-black tracking-tighter">
+                                                ${footerHints}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-[#1A1A1A] p-4 sm:p-5 rounded-2xl shadow-[inset_0_8px_20px_rgba(0,0,0,0.8)] border-t-[3px] border-[#0A0A0A] lg:w-[320px] flex flex-col">
+                                <div class="grid grid-cols-4 gap-2 sm:gap-3">
+                                    ${KEYPAD_KEYS.map(key => {
+                                        let color = 'text-neutral-300';
+                                        if (['MENU','UP','DOWN','OK'].includes(key.id)) color = 'text-cyan-400';
+                                        if (['CLR','BACK'].includes(key.id)) color = 'text-orange-400';
+                                        let btnClasses = `w-10 h-10 sm:w-[60px] sm:h-12 flex items-center justify-center text-[10px] sm:text-xs font-bold rounded-lg bg-[#222] ${color} border-b-[4px] border-[#000] shadow-[0_3px_5px_rgba(0,0,0,0.6)] hover:bg-[#2a2a2a] transition-all active:border-b-0 active:translate-y-[4px] active:bg-[#333] select-none`;
+                                        if(state.activeKey === key.id) btnClasses += ' border-b-0 translate-y-[4px] bg-[#333] text-white';
+                                        return `<button onclick="handleKeyPress('${key.id}')" class="${btnClasses}">${key.label}</button>`;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            app.innerHTML = html;
+        }
+
+        resetGame(state.numDisks);
+    </script>
+</body>
+</html>
