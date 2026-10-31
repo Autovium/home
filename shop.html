@@ -1,25 +1,21 @@
-# Let's write the complete, updated index.html code with:
-# 1. Fixed branding logo (using a high-tech Lucide icon badge instead of uploads/lines.webp)
-# 2. Proper handling of newline characters (\n or <br>) in descriptions using `.replace(/\n/g, '<br>')` or `<p>` tag formatting.
-
-index_html_code = """<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autovium Technologies | Hardware Components & Systems Catalog</title>
+    <title>Autovium Technologies | Hardware & Component Catalog</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- Lucide Icons & Tailwind CSS -->
+    <!-- Lucide Icons & PapaParse for CSV parsing -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- PapaParse for parsing CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -38,18 +34,24 @@ index_html_code = """<!DOCTYPE html>
                         highlight: '#fbbf24', // Amber
                     },
                     animation: {
+                        'float': 'float 6s ease-in-out infinite',
                         'glow': 'glow 4s ease-in-out infinite alternate',
                     },
                     keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
                         glow: {
-                            '0%': { opacity: '0.3', filter: 'blur(40px)' },
-                            '100%': { opacity: '0.6', filter: 'blur(60px)' },
+                            '0%': { opacity: '0.2', filter: 'blur(40px)' },
+                            '100%': { opacity: '0.5', filter: 'blur(60px)' },
                         }
                     }
                 }
             }
         }
     </script>
+    
     <style>
         body { 
             background-color: #050505; 
@@ -57,512 +59,1163 @@ index_html_code = """<!DOCTYPE html>
             overflow-x: hidden;
         }
         
+        /* Tactical Noise Layer */
         .noise-bg {
             position: fixed;
             inset: 0;
-            z-index: 50;
-            opacity: 0.03;
+            z-index: 40;
+            opacity: 0.035;
             pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         }
 
+        /* Subtle Technical Grid Pattern */
         .grid-pattern {
             background-image: 
-                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
-            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+                linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(ellipse at center, black 50%, transparent 90%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 50%, transparent 90%);
         }
 
+        /* Glassmorphic Panel Styling */
         .glass-panel {
-            background: rgba(17, 17, 17, 0.5);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(17, 17, 17, 0.55);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
         }
 
-        .glass-panel:hover {
-            border-color: rgba(16, 185, 129, 0.3);
-            background: rgba(17, 17, 17, 0.85);
+        .glass-panel-interactive {
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-panel-interactive:hover {
+            border-color: rgba(16, 185, 129, 0.35);
+            background: rgba(22, 22, 22, 0.85);
+            box-shadow: 0 10px 40px -10px rgba(16, 185, 129, 0.15);
         }
 
         .text-gradient-accent {
-            background: linear-gradient(135deg, #10b981, #34d399);
+            background: linear-gradient(135deg, #10b981, #34d399, #fbbf24);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #222222;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
     </style>
 </head>
-<body class="antialiased selection:bg-accent selection:text-base min-h-screen flex flex-col">
+<body class="antialiased selection:bg-accent selection:text-base font-sans min-h-screen flex flex-col justify-between">
+    <!-- Overlay FX -->
     <div class="noise-bg"></div>
+    <div class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-accent/15 rounded-full mix-blend-screen filter blur-[120px] animate-glow pointer-events-none z-0"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-highlight/10 rounded-full mix-blend-screen filter blur-[140px] animate-glow pointer-events-none z-0" style="animation-delay: 2s;"></div>
 
-    <!-- Background Glow Blobs -->
-    <div class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-accent/20 rounded-full mix-blend-screen filter blur-[100px] animate-glow pointer-events-none z-0"></div>
-    <div class="fixed bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-highlight/10 rounded-full mix-blend-screen filter blur-[120px] animate-glow pointer-events-none z-0" style="animation-delay: 2s;"></div>
-
-    <!-- Navigation Header -->
-    <nav class="fixed w-full z-50 top-0 pt-6 px-6 transition-all duration-300" id="navbar">
-        <div class="max-w-7xl mx-auto glass-panel rounded-full px-6 py-3 flex justify-between items-center">
+    <!-- Header Navigation -->
+    <nav class="sticky top-0 z-50 pt-4 px-4 sm:px-8 pb-2 transition-all duration-300 backdrop-blur-md bg-base/80 border-b border-white/5" id="navbar">
+        <div class="max-w-7xl mx-auto glass-panel rounded-2xl px-5 py-3 flex flex-wrap justify-between items-center gap-4">
+            <!-- Brand -->
             <a href="#catalog" class="flex items-center gap-3 group">
-                <div class="w-9 h-9 rounded-xl bg-accent/20 border border-accent/40 flex items-center justify-center text-accent group-hover:scale-105 transition-transform shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                <div class="w-9 h-9 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-base transition-all duration-300">
                     <i data-lucide="cpu" class="w-5 h-5"></i>
                 </div>
-                <span class="font-display font-bold text-lg tracking-wide text-white">Autovium <span class="text-accent">Technologies</span></span>
+                <div class="flex flex-col">
+                    <span class="font-display font-bold text-base tracking-wide text-white leading-tight flex items-center gap-2">
+                        Autovium <span class="text-accent text-xs font-mono font-normal px-1.5 py-0.5 rounded bg-accent/10 border border-accent/20">CATALOG</span>
+                    </span>
+                    <span class="text-[10px] font-mono text-neutral-400 tracking-wider uppercase">Next-Gen Hardware Engine</span>
+                </div>
             </a>
-            
-            <div class="flex items-center gap-4">
-                <span id="data-status-badge" class="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-accent/10 border border-accent/30 text-accent">
-                    <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span> AUTO-SYNC ACTIVE
-                </span>
-                <label for="csv-file-input" class="cursor-pointer text-xs font-mono glass-panel px-3.5 py-2 rounded-full text-neutral-300 hover:text-accent border-dashed border-white/20 hover:border-accent transition-colors flex items-center gap-1.5">
-                    <i data-lucide="upload" class="w-3.5 h-3.5"></i> Custom CSV
-                    <input type="file" id="csv-file-input" accept=".csv" class="hidden">
+
+            <!-- Navigation Actions -->
+            <div class="flex items-center gap-3">
+                <!-- CSV Upload Button -->
+                <label class="cursor-pointer text-xs font-mono px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-accent/40 text-neutral-300 hover:text-white transition-all flex items-center gap-2">
+                    <i data-lucide="upload-cloud" class="w-4 h-4 text-accent"></i>
+                    <span class="hidden sm:inline">Import CSV</span>
+                    <input type="file" id="csvFileInput" accept=".csv" class="hidden">
                 </label>
+
+                <!-- System Status Indicator -->
+                <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-accent/10 border border-accent/20 text-accent font-mono text-xs">
+                    <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+                    <span id="systemStatusText">DB SYNCING...</span>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Dynamic Content Container -->
-    <main class="flex-grow pt-28 pb-20 relative z-10 max-w-7xl mx-auto px-6 w-full" id="app-container">
-        <!-- Content injected dynamically via hash route -->
+    <!-- MAIN APP WRAPPER -->
+    <main class="relative z-10 flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ================= CATALOG PAGE VIEW ================= -->
+        <section id="catalogView" class="space-y-8">
+            
+            <!-- Hero Header Banner -->
+            <div class="relative glass-panel rounded-3xl p-6 sm:p-10 overflow-hidden border border-white/10">
+                <div class="absolute inset-0 grid-pattern opacity-60"></div>
+                <div class="relative z-10 max-w-3xl">
+                    <div class="inline-flex items-center gap-2 glass-panel px-3 py-1.5 rounded-full text-xs font-mono text-accent mb-4">
+                        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                        RAPID COMPONENT DISCOVERY & SPECS
+                    </div>
+                    <h1 class="text-3xl sm:text-5xl font-display font-black text-white tracking-tight mb-3">
+                        ENGINEERING <span class="text-gradient-accent">INVENTORY</span>
+                    </h1>
+                    <p class="text-neutral-400 font-light text-sm sm:text-base leading-relaxed">
+                        Precision microcontrollers, sensors, power modules, and robotics hardware built for mission-critical industrial automation deployments.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Controls Panel: Search & Filters -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                
+                <!-- Sidebar Filters -->
+                <aside class="lg:col-span-1 space-y-6">
+                    <div class="glass-panel p-5 rounded-2xl space-y-6 sticky top-24">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                            <h3 class="font-display font-bold text-white text-sm tracking-wide uppercase flex items-center gap-2">
+                                <i data-lucide="filter" class="w-4 h-4 text-accent"></i> Filters
+                            </h3>
+                            <button id="resetFiltersBtn" class="text-[11px] font-mono text-neutral-400 hover:text-accent transition-colors">RESET ALL</button>
+                        </div>
+
+                        <!-- Category Filter -->
+                        <div>
+                            <label class="block font-mono text-xs text-neutral-400 mb-2 uppercase">Category</label>
+                            <div id="categoryFilterContainer" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                                <!-- Dynamic Categories Inserted Here -->
+                            </div>
+                        </div>
+
+                        <!-- Stock Status Toggle -->
+                        <div class="pt-2 border-t border-white/5">
+                            <label class="block font-mono text-xs text-neutral-400 mb-2 uppercase">Stock Availability</label>
+                            <label class="flex items-center justify-between cursor-pointer group text-sm text-neutral-300 hover:text-white">
+                                <span>In Stock Only</span>
+                                <input type="checkbox" id="stockOnlyToggle" class="sr-only peer">
+                                <div class="w-9 h-5 bg-surface peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-neutral-400 peer-checked:after:bg-accent after:border-neutral-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent/20 border border-white/10 peer-checked:border-accent/40 relative"></div>
+                            </label>
+                        </div>
+
+                        <!-- Featured Items Filter -->
+                        <div class="pt-2 border-t border-white/5">
+                            <label class="flex items-center justify-between cursor-pointer group text-sm text-neutral-300 hover:text-white">
+                                <span class="flex items-center gap-1.5">
+                                    <i data-lucide="star" class="w-3.5 h-3.5 text-highlight"></i> Featured Only
+                                </span>
+                                <input type="checkbox" id="featuredToggle" class="sr-only peer">
+                                <div class="w-9 h-5 bg-surface peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-neutral-400 peer-checked:after:bg-highlight after:border-neutral-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-highlight/20 border border-white/10 peer-checked:border-highlight/40 relative"></div>
+                            </label>
+                        </div>
+
+                        <!-- Data Info Pill -->
+                        <div class="pt-3 border-t border-white/5 font-mono text-[11px] text-neutral-500 flex justify-between">
+                            <span>Total Items:</span>
+                            <span id="totalItemsCount" class="text-white font-bold">0</span>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Search Results & Grid Content -->
+                <div class="lg:col-span-3 space-y-6">
+                    
+                    <!-- Search Bar & Sorting Bar -->
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
+                        
+                        <!-- Search Box -->
+                        <div class="relative w-full sm:w-80">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+                            <input type="text" id="searchInput" placeholder="Search by Name, SKU, Category, Tags..." 
+                                class="w-full bg-base/80 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 font-mono transition-all">
+                        </div>
+
+                        <!-- Sorting & Layout Switcher -->
+                        <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3">
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono text-xs text-neutral-400 hidden sm:inline">SORT:</span>
+                                <select id="sortSelect" class="bg-base border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-neutral-300 focus:outline-none focus:border-accent/50 transition-colors cursor-pointer">
+                                    <option value="featured">Featured First</option>
+                                    <option value="price-asc">Price: Low to High</option>
+                                    <option value="price-desc">Price: High to Low</option>
+                                    <option value="name-asc">Name: A to Z</option>
+                                </select>
+                            </div>
+
+                            <!-- Layout Grid/Table Toggle -->
+                            <div class="flex items-center bg-base/80 p-1 rounded-xl border border-white/10">
+                                <button id="gridViewBtn" class="p-1.5 rounded-lg text-accent bg-white/10 transition-colors" title="Grid View">
+                                    <i data-lucide="grid" class="w-4 h-4"></i>
+                                </button>
+                                <button id="listViewBtn" class="p-1.5 rounded-lg text-neutral-400 hover:text-white transition-colors" title="List View">
+                                    <i data-lucide="list" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Products Output Grid -->
+                    <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        <!-- Product Cards Dynamic Load -->
+                    </div>
+
+                    <!-- Products Output List Table (Hidden by default) -->
+                    <div id="productsListTable" class="hidden glass-panel rounded-2xl overflow-hidden border border-white/10">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left font-mono text-xs">
+                                <thead class="bg-white/5 border-b border-white/10 text-neutral-400 uppercase">
+                                    <tr>
+                                        <th class="p-4">SKU / Item</th>
+                                        <th class="p-4">Category</th>
+                                        <th class="p-4">Stock</th>
+                                        <th class="p-4">Price (LKR)</th>
+                                        <th class="p-4 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productsTableBody" class="divide-y divide-white/5 text-neutral-300">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Empty State View -->
+                    <div id="emptyState" class="hidden glass-panel rounded-3xl p-12 text-center space-y-4">
+                        <div class="w-12 h-12 rounded-full bg-white/5 border border-white/10 mx-auto flex items-center justify-center text-neutral-400">
+                            <i data-lucide="search-x" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-xl font-display font-bold text-white">No Components Found</h3>
+                        <p class="text-sm text-neutral-400 max-w-sm mx-auto">Try adjusting your search queries or clearing category filters to inspect full hardware database.</p>
+                        <button onclick="resetFilters()" class="px-4 py-2 bg-accent/10 border border-accent/30 text-accent font-mono text-xs rounded-xl hover:bg-accent/20 transition-all">Clear Filters</button>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= PRODUCT DETAIL PAGE VIEW ================= -->
+        <section id="productDetailView" class="hidden space-y-8">
+            
+            <!-- Breadcrumb Navigation -->
+            <div class="flex items-center justify-between">
+                <a href="#catalog" class="inline-flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-accent transition-colors">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> BACK TO CATALOG
+                </a>
+                <div class="flex items-center gap-2 font-mono text-xs text-neutral-500">
+                    <span id="detailCategoryBreadcrumb">Category</span> / <span id="detailSkuBreadcrumb" class="text-accent">SKU-000</span>
+                </div>
+            </div>
+
+            <!-- Product Summary Card Header -->
+            <div class="glass-panel rounded-3xl p-6 lg:p-10 border border-white/10">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                    
+                    <!-- Product Tech Graphic Display (Icon Based) -->
+                    <div class="lg:col-span-5 space-y-4">
+                        <div class="relative rounded-2xl border border-white/10 bg-black/60 p-8 flex flex-col items-center justify-center min-h-[320px] overflow-hidden group">
+                            <div class="absolute inset-0 grid-pattern opacity-40"></div>
+                            
+                            <!-- Dynamic Icon Graphics Container -->
+                            <div id="detailGraphicContainer" class="relative z-10 w-28 h-28 rounded-3xl bg-accent/10 border border-accent/30 flex items-center justify-center text-accent shadow-2xl shadow-accent/20 transition-transform duration-500 group-hover:scale-110">
+                                <i id="detailIcon" data-lucide="cpu" class="w-14 h-14"></i>
+                            </div>
+                            
+                            <div id="detailFeaturedBadge" class="absolute top-4 left-4 hidden bg-highlight/20 border border-highlight/40 text-highlight text-[11px] font-mono px-2.5 py-1 rounded-md z-20">
+                                ★ FEATURED HARDWARE
+                            </div>
+                            
+                            <div class="relative z-10 mt-6 font-mono text-[11px] text-neutral-400 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/10">
+                                SCHEMATIC ID: <span id="detailGraphicId" class="text-accent">AV-IC-01</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Specs Header Info -->
+                    <div class="lg:col-span-7 flex flex-col justify-between space-y-6">
+                        <div class="space-y-3">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <span id="detailSku" class="font-mono text-xs px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-accent font-bold">SKU</span>
+                                <span id="detailCategory" class="font-mono text-xs text-neutral-400 uppercase tracking-wider">Category</span>
+                            </div>
+                            
+                            <h1 id="detailTitle" class="text-3xl sm:text-4xl font-display font-bold text-white leading-tight">
+                                Component Name
+                            </h1>
+                            
+                            <!-- Price Block -->
+                            <div class="flex items-baseline gap-4 pt-2">
+                                <span id="detailSalePrice" class="text-3xl font-mono font-bold text-accent">LKR 0</span>
+                                <span id="detailRegularPrice" class="text-lg font-mono text-neutral-500 line-through">LKR 0</span>
+                            </div>
+                        </div>
+
+                        <!-- Short Description -->
+                        <div class="p-4 rounded-xl bg-white/5 border border-white/10 text-sm text-neutral-300 font-light leading-relaxed">
+                            <span class="block font-mono text-xs text-neutral-500 uppercase mb-1">Overview:</span>
+                            <div id="detailShortDesc">Component summary...</div>
+                        </div>
+
+                        <!-- Stock & Action Row -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-white/10">
+                            <div>
+                                <span class="block text-xs font-mono text-neutral-400 uppercase mb-1">Inventory Status:</span>
+                                <div id="detailStockBadge" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-mono font-bold border">
+                                    <span class="w-2 h-2 rounded-full bg-current"></span>
+                                    <span id="detailStockText">IN STOCK (10 units)</span>
+                                </div>
+                            </div>
+                            
+                            <button id="inquireBtn" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-accent to-emerald-600 hover:from-emerald-400 hover:to-accent text-base font-display font-bold text-white shadow-lg shadow-accent/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+                                <i data-lucide="send" class="w-4 h-4"></i> Request Quote / Specs
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Deep Specs & Technical Details -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Detailed Technical Specifications -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="glass-panel p-6 sm:p-8 rounded-3xl space-y-6 border border-white/10">
+                        <h3 class="text-xl font-display font-bold text-white flex items-center gap-2">
+                            <i data-lucide="file-text" class="w-5 h-5 text-accent"></i> Full Description & Applications
+                        </h3>
+                        
+                        <div id="detailFullDesc" class="prose prose-invert max-w-none text-neutral-300 text-sm leading-relaxed font-light space-y-3">
+                            <!-- Injected html description -->
+                        </div>
+
+                        <!-- Physical Dimensions Matrix Table -->
+                        <div class="pt-6 border-t border-white/10">
+                            <h4 class="font-mono text-xs text-neutral-400 uppercase mb-4 tracking-wider">Physical Specifications & Form Factor</h4>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
+                                <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+                                    <span class="text-neutral-500 block text-[10px]">WEIGHT</span>
+                                    <span id="dimWeight" class="text-white font-bold">-- g</span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+                                    <span class="text-neutral-500 block text-[10px]">LENGTH</span>
+                                    <span id="dimLength" class="text-white font-bold">-- mm</span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+                                    <span class="text-neutral-500 block text-[10px]">WIDTH</span>
+                                    <span id="dimWidth" class="text-white font-bold">-- mm</span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+                                    <span class="text-neutral-500 block text-[10px]">HEIGHT</span>
+                                    <span id="dimHeight" class="text-white font-bold">-- mm</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tags Cloud -->
+                        <div class="pt-4 border-t border-white/5">
+                            <span class="font-mono text-xs text-neutral-500 uppercase block mb-2">Hardware Tags:</span>
+                            <div id="detailTags" class="flex flex-wrap gap-2">
+                                <!-- Tags -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Datasheet Viewer / Sidebar Info -->
+                <div class="lg:col-span-1 space-y-6">
+                    
+                    <!-- Datasheet Quick Access Panel -->
+                    <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-display font-bold text-white text-sm uppercase flex items-center gap-2">
+                                <i data-lucide="file-check-2" class="w-4 h-4 text-accent"></i> Technical Specs
+                            </h4>
+                            <span class="font-mono text-[10px] text-accent bg-accent/10 px-2 py-0.5 rounded border border-accent/20">VERIFIED</span>
+                        </div>
+                        
+                        <div class="p-4 rounded-2xl bg-black/50 border border-white/10 text-center space-y-3">
+                            <i data-lucide="file-code" class="w-10 h-10 text-neutral-400 mx-auto"></i>
+                            <p class="text-xs text-neutral-400 font-mono">Official Manufacturers Specification Sheet & Pinout Diagram</p>
+                            <button onclick="downloadMockDatasheet()" class="w-full py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-mono text-white transition-colors flex items-center justify-center gap-2">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i> Download PDF Specs
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Autovium Support Card -->
+                    <div class="glass-panel p-6 rounded-3xl border border-white/10 space-y-3">
+                        <h4 class="font-display font-bold text-white text-sm">Need System Integration?</h4>
+                        <p class="text-xs text-neutral-400 font-light leading-relaxed">
+                            Autovium Technologies builds turnkey custom embedded boards, machine vision systems, and automated testing rigs.
+                        </p>
+                        <a href="mailto:admin@autovium.com" class="inline-flex items-center gap-2 font-mono text-xs text-accent hover:underline">
+                            Contact Engineering Team &rarr;
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
     </main>
 
-    <!-- Global Footer -->
-    <footer class="border-t border-white/5 py-8 relative z-10 bg-base">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-2">
-                <i data-lucide="cpu" class="w-4 h-4 text-accent"></i>
-                <span class="font-display font-bold text-sm text-white">Autovium Technologies</span>
+    <!-- INQUIRY MODAL (Hidden by default) -->
+    <div id="inquiryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-panel max-w-lg w-full p-6 sm:p-8 rounded-3xl border border-white/20 space-y-6 shadow-2xl relative">
+            
+            <button id="closeModalBtn" class="absolute top-5 right-5 text-neutral-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="space-y-1">
+                <h3 class="text-xl font-display font-bold text-white flex items-center gap-2">
+                    <i data-lucide="shopping-cart" class="w-5 h-5 text-accent"></i> Component Inquiry Request
+                </h3>
+                <p class="text-xs text-neutral-400 font-mono">Submit request for component quote or custom engineering integration.</p>
             </div>
-            <p class="text-neutral-500 font-mono text-xs">&copy; 2026 Autovium Technologies. Root access secured.</p>
+
+            <!-- Pre-filled info badge -->
+            <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-black border border-white/10 flex items-center justify-center text-accent">
+                    <i data-lucide="box" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h5 id="modalItemTitle" class="text-sm font-bold text-white">Item Name</h5>
+                    <span id="modalItemSku" class="text-xs font-mono text-accent">SKU-000</span>
+                </div>
+            </div>
+
+            <form id="inquiryForm" onsubmit="handleInquirySubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block font-mono text-xs text-neutral-400 mb-1">YOUR NAME / COMPANY</label>
+                    <input type="text" required placeholder="e.g. John Doe (Robotics Ltd)" class="w-full bg-base border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accent/60">
+                </div>
+                
+                <div>
+                    <label class="block font-mono text-xs text-neutral-400 mb-1">EMAIL ADDRESS</label>
+                    <input type="email" id="modalUserEmail" required placeholder="john@example.com" class="w-full bg-base border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accent/60">
+                </div>
+
+                <div>
+                    <label class="block font-mono text-xs text-neutral-400 mb-1">ESTIMATED QUANTITY NEEDED</label>
+                    <input type="number" id="modalQty" min="1" value="10" class="w-full bg-base border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accent/60 font-mono">
+                </div>
+
+                <div>
+                    <label class="block font-mono text-xs text-neutral-400 mb-1">ADDITIONAL NOTES / APPLICATION REQUIREMENTS</label>
+                    <textarea id="modalNotes" rows="3" placeholder="Provide details on project timeline or custom assembly needs..." class="w-full bg-base border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accent/60"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-3 rounded-xl bg-accent text-base font-display font-bold text-white hover:bg-emerald-400 transition-colors shadow-lg shadow-accent/20">
+                    Send Technical Inquiry
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Toast Notification Message Container -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 glass-panel px-5 py-3 rounded-2xl border border-accent/40 text-accent font-mono text-xs shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3">
+        <i data-lucide="check-circle" class="w-4 h-4"></i>
+        <span id="toastMsg">Notification message</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-8 relative z-10 bg-base mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-accent/20 flex items-center justify-center text-accent text-xs">
+                    <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+                </div>
+                <span class="font-display font-bold text-sm tracking-wide text-white">Autovium Technologies</span>
+            </div>
+            <p class="text-neutral-500 font-mono text-xs">&copy; 2026 Autovium Technologies. All technical specifications subject to change.</p>
         </div>
     </footer>
 
-    <!-- Application Script -->
-    <script>
-        // Global State
-        let productsData = [];
-        let categoriesList = [];
-        let activeCategory = 'All';
-        let searchQuery = '';
-        let viewMode = 'grid'; // 'grid' or 'list'
-        let inStockOnly = false;
-        let featuredOnly = false;
 
-        // Auto-load products.csv on launch
+    <!-- JAVASCRIPT APPLICATION ARCHITECTURE -->
+    <script>
+        // Embedded Fallback Sample Data (No images, pure component data)
+        const SAMPLE_PRODUCTS = [
+            {
+                ID: "948",
+                Type: "simple",
+                SKU: "AV10001",
+                Name: "L7805CV 5V Linear Voltage Regulator",
+                Published: "1",
+                "Is featured?": "0",
+                "Visibility in catalog": "visible",
+                "Short description": "Fixed 5V output positive voltage regulator IC TO-220 package.",
+                Description: "<p>The L7805CV is a positive three-terminal voltage regulator available in TO-220 package and several fixed output voltages, making it useful in a wide range of applications. These regulators can provide local on-card regulation, eliminating the distribution problems associated with single point regulation.</p>",
+                Stock: "10",
+                "Weight (g)": "10.4",
+                "Length (mm)": "4.6",
+                "Width (mm)": "15.75",
+                "Height (mm)": "10.4",
+                "Sale price": "30",
+                "Regular price": "55",
+                Categories: "Voltage Regulators",
+                Tags: "Power Supply, voltage regulator, TO-220, 5V",
+                Brands: "STMicroelectronics"
+            },
+            {
+                ID: "949",
+                Type: "simple",
+                SKU: "AV10002",
+                Name: "ESP32-WROOM-32U Wi-Fi + BT MCU Module",
+                Published: "1",
+                "Is featured?": "1",
+                "Visibility in catalog": "visible",
+                "Short description": "Powerful generic Wi-Fi+BT+BLE MCU module for low-power sensor networks.",
+                Description: "<p>ESP32-WROOM-32U is a powerful, generic Wi-Fi + Bluetooth + Bluetooth LE MCU module that targets a wide variety of applications, ranging from low-power sensor networks to the most demanding tasks, such as voice encoding, music streaming and MP3 decoding.</p>",
+                Stock: "45",
+                "Weight (g)": "4.2",
+                "Length (mm)": "18.0",
+                "Width (mm)": "19.2",
+                "Height (mm)": "3.2",
+                "Sale price": "1250",
+                "Regular price": "1500",
+                Categories: "Microcontrollers",
+                Tags: "ESP32, WiFi, Bluetooth, IoT, Embedded",
+                Brands: "Espressif Systems"
+            },
+            {
+                ID: "950",
+                Type: "simple",
+                SKU: "AV10003",
+                Name: "TMC2209 Silent Stepper Motor Driver",
+                Published: "1",
+                "Is featured?": "1",
+                "Visibility in catalog": "visible",
+                "Short description": "Ultra-silent motor driver IC for two-phase stepper motors with StealthChop2.",
+                Description: "<p>The TMC2209 is an ultra-silent motor driver IC for two-phase stepper motors. TMC2209 pin compatibility to a number of legacy drivers as well as TMC2208. TRINAMIC’s sophisticated StealthChop2 guarantee noiseless operation, maximum efficiency and best motor torque.</p>",
+                Stock: "18",
+                "Weight (g)": "8.5",
+                "Length (mm)": "20.0",
+                "Width (mm)": "15.0",
+                "Height (mm)": "11.0",
+                "Sale price": "1800",
+                "Regular price": "2200",
+                Categories: "Robotics & CNC",
+                Tags: "Stepper, Driver, Silent, CNC, 3D Printer",
+                Brands: "Trinamic"
+            },
+            {
+                ID: "951",
+                Type: "simple",
+                SKU: "AV10004",
+                Name: "MPU6050 6-DOF Accelerometer Gyroscope Module",
+                Published: "1",
+                "Is featured?": "0",
+                "Visibility in catalog": "visible",
+                "Short description": "3-axis gyroscope and 3-axis accelerometer with Digital Motion Processor (DMP).",
+                Description: "<p>The MPU-6050 sensor contains a MEMS accelerometer and a MEMS gyro in a single chip. It is very accurate, as it contains 16-bits analog-to-digital conversion hardware for each channel. Hence it captures the x, y, and z channel at the same time.</p>",
+                Stock: "0",
+                "Weight (g)": "3.1",
+                "Length (mm)": "21.0",
+                "Width (mm)": "16.0",
+                "Height (mm)": "3.0",
+                "Sale price": "650",
+                "Regular price": "800",
+                Categories: "Sensors",
+                Tags: "IMU, Gyroscope, Accelerometer, Motion, I2C",
+                Brands: "InvenSense"
+            },
+            {
+                ID: "952",
+                Type: "simple",
+                SKU: "AV10005",
+                Name: "VL53L0X Time-of-Flight Ranging Sensor",
+                Published: "1",
+                "Is featured?": "0",
+                "Visibility in catalog": "visible",
+                "Short description": "Laser distance sensor module accurate up to 2 meters independent of target reflectance.",
+                Description: "<p>The VL53L0X is a new generation Time-of-Flight (ToF) laser-ranging module housed in the smallest package on the market today, providing accurate distance measurement whatever the target reflectances unlike conventional technologies.</p>",
+                Stock: "28",
+                "Weight (g)": "2.5",
+                "Length (mm)": "13.0",
+                "Width (mm)": "10.5",
+                "Height (mm)": "2.5",
+                "Sale price": "1450",
+                "Regular price": "1650",
+                Categories: "Sensors",
+                Tags: "Laser, Distance, ToF, Optical, Sensor",
+                Brands: "STMicroelectronics"
+            },
+            {
+                ID: "953",
+                Type: "simple",
+                SKU: "AV10006",
+                Name: "ST7789 1.54 inch IPS LCD Display Module",
+                Published: "1",
+                "Is featured?": "1",
+                "Visibility in catalog": "visible",
+                "Short description": "240x240 High-resolution full-color SPI HD TFT screen.",
+                Description: "<p>This is a general LCD display Module, IPS screen, 1.54inch diagonal, 240x240 resolution, with embedded controller, communicating via SPI interface. Offers wide viewing angles and vivid colors for industrial HMI interfaces.</p>",
+                Stock: "12",
+                "Weight (g)": "12.0",
+                "Length (mm)": "44.0",
+                "Width (mm)": "32.0",
+                "Height (mm)": "5.0",
+                "Sale price": "1950",
+                "Regular price": "2400",
+                Categories: "Displays",
+                Tags: "LCD, TFT, IPS, Display, SPI, HMI",
+                Brands: "Waveshare"
+            }
+        ];
+
+        // Dynamic Component Icon Assigner
+        function getComponentIcon(category, name = '') {
+            const cat = (category || '').toLowerCase();
+            const n = (name || '').toLowerCase();
+
+            if (cat.includes('regulator') || cat.includes('power') || n.includes('voltage')) return 'zap';
+            if (cat.includes('microcontroller') || n.includes('esp32') || n.includes('mcu')) return 'cpu';
+            if (cat.includes('robotics') || cat.includes('cnc') || n.includes('stepper') || n.includes('driver')) return 'sliders';
+            if (cat.includes('sensor') || n.includes('tof') || n.includes('laser')) return 'eye';
+            if (cat.includes('display') || cat.includes('lcd') || cat.includes('screen')) return 'activity';
+            if (cat.includes('motion') || cat.includes('imu') || n.includes('gyro')) return 'radio';
+            if (cat.includes('battery') || cat.includes('charger')) return 'battery-charging';
+            
+            return 'box';
+        }
+
+        // Global State Management
+        let productsData = [...SAMPLE_PRODUCTS];
+        let filteredProducts = [...SAMPLE_PRODUCTS];
+        let currentViewMode = 'grid'; // 'grid' or 'list'
+        let activeCategory = 'all';
+
+        // Initialize App on DOM Ready
         document.addEventListener('DOMContentLoaded', () => {
             initCSVAutoLoad();
-            setupCSVUploader();
-            window.addEventListener('hashchange', handleRoute);
+            initCSVUploader();
+            initRouting();
+            initFilterListeners();
+            initModalListeners();
         });
 
-        // 1. Fetch CSV automatically from local folder or GitHub Pages root
+        // Auto Fetch products.csv from root repository directory
         async function initCSVAutoLoad() {
-            const statusBadge = document.getElementById('data-status-badge');
+            const statusBadge = document.getElementById('systemStatusText');
             try {
                 const response = await fetch('./products.csv?v=' + new Date().getTime());
                 if (!response.ok) throw new Error("products.csv fetch failed");
                 const csvText = await response.text();
-                parseAndSetCSV(csvText);
+                
+                if (window.Papa) {
+                    Papa.parse(csvText, {
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: function(results) {
+                            if (results.data && results.data.length > 0) {
+                                processImportedCSV(results.data);
+                                if (statusBadge) statusBadge.innerText = `DB SYNCED (${productsData.length} ITEMS)`;
+                            }
+                        }
+                    });
+                }
             } catch (err) {
-                console.warn("Local fetch failed, using fallback dataset...", err);
-                // Fallback built-in data if fetch fails locally without webserver
-                const fallbackCSV = `ID,Type,SKU,Name,Short description,Description,In stock?,Stock,Is featured?,Weight (g),Length (mm),Width (mm),Height (mm),Categories,Brands
-948,simple,AV10001,L7805CV 5V Linear Voltage Regulator,"Fixed 5V positive voltage regulator in TO-220 package.\nOutput current up to 1.5A with thermal overload protection.","The L7805CV is a classic three-terminal positive voltage regulator.\n\n• Output Voltage: 5V\n• Output Current: Up to 1.5A\n• Thermal Overload Protection\n• Short Circuit Protection",1,10,0,5,10.4,4.6,15.75,"Power Supply > Voltage Regulators",Autovium
-949,simple,AV10002,ESP32-WROOM-32D Development Board,"Dual-Core Wi-Fi + Bluetooth MCU Module with CP2102 USB-to-UART bridge.\nIdeal for IoT and robotics.","The ESP32-WROOM-32D is a powerful, generic Wi-Fi+BT+BLE MCU module.\n\n• Dual-core Tensilica Xtensa 32-bit LX6\n• Wi-Fi 802.11 b/g/n + Bluetooth v4.2 BR/EDR & BLE\n• Rich peripheral set including capacitive touch, ADC, DAC, UART, SPI, I2C",1,25,1,12,48.2,25.4,13.0,"Microcontrollers > ESP32",Autovium`;
-                parseAndSetCSV(fallbackCSV);
+                console.warn("Local/Repo products.csv fetch not available, running fallback sample data:", err);
+                if (statusBadge) statusBadge.innerText = `DB LOADED (${productsData.length} ITEMS)`;
+                renderCatalog();
             }
         }
 
-        // 2. CSV Parser Engine
-        function parseAndSetCSV(csvText) {
-            Papa.parse(csvText, {
-                header: true,
-                skipEmptyLines: true,
-                dynamicTyping: true,
-                complete: function(results) {
-                    productsData = results.data.map(item => ({
-                        id: String(item.ID || item.id || Math.random()),
-                        sku: item.SKU || item.sku || 'N/A',
-                        name: item.Name || item.name || 'Unnamed Hardware Component',
-                        category: (item.Categories || item.categories || 'Uncategorized').split('>')[0].trim(),
-                        fullCategory: item.Categories || item.categories || 'General',
-                        shortDescription: (item["Short description"] || item.short_description || '').replace(/\\n/g, '\n'),
-                        description: (item.Description || item.description || '').replace(/\\n/g, '\n'),
-                        regularPrice: item["Regular price"] || item.regular_price || 0,
-                        salePrice: item["Sale price"] || item.sale_price || null,
-                        inStock: Number(item["In stock?"] ?? item.in_stock ?? 1) === 1,
-                        stockCount: Number(item.Stock ?? item.stock ?? 0),
-                        isFeatured: Number(item["Is featured?"] ?? item.is_featured ?? 0) === 1,
-                        weight: item["Weight (g)"] || item.weight || 'N/A',
-                        length: item["Length (mm)"] || item.length || 'N/A',
-                        width: item["Width (mm)"] || item.width || 'N/A',
-                        height: item["Height (mm)"] || item.height || 'N/A',
-                        tags: item.Tags || item.tags || '',
-                        brand: item.Brands || item.brand || 'Autovium',
-                        image: (item.Images || item.images || '').split(',')[0].trim() || ''
-                    }));
-
-                    extractCategories();
-                    handleRoute();
-                }
-            });
+        // 1. ROUTING SYSTEM (URL Hash Based: #catalog or #product?id=948)
+        function initRouting() {
+            window.addEventListener('hashchange', handleRoute);
+            handleRoute(); // Execute on first load
         }
 
-        function setupCSVUploader() {
-            const input = document.getElementById('csv-file-input');
+        function handleRoute() {
+            const hash = window.location.hash || '#catalog';
+            const catalogView = document.getElementById('catalogView');
+            const productDetailView = document.getElementById('productDetailView');
+
+            if (hash.startsWith('#product')) {
+                const params = new URLSearchParams(hash.split('?')[1]);
+                const productId = params.get('id');
+                const product = productsData.find(p => String(p.ID) === String(productId));
+
+                if (product) {
+                    catalogView.classList.add('hidden');
+                    productDetailView.classList.remove('hidden');
+                    renderProductDetail(product);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    window.location.hash = '#catalog';
+                }
+            } else {
+                // Default to Catalog
+                productDetailView.classList.add('hidden');
+                catalogView.classList.remove('hidden');
+                renderCatalog();
+            }
+
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        }
+
+        // 2. CSV IMPORT & PARSING (PapaParse with fallback)
+        function initCSVUploader() {
+            const input = document.getElementById('csvFileInput');
             input.addEventListener('change', (e) => {
                 const file = e.target.files[0];
-                if (file) {
+                if (!file) return;
+
+                if (window.Papa) {
+                    Papa.parse(file, {
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: function(results) {
+                            if (results.data && results.data.length > 0) {
+                                processImportedCSV(results.data);
+                            } else {
+                                showToast('Failed to parse CSV records');
+                            }
+                        },
+                        error: function(err) {
+                            showToast('Error reading CSV file');
+                        }
+                    });
+                } else {
+                    showToast('CSV Parser missing. Using native fallback.');
                     const reader = new FileReader();
-                    reader.onload = (evt) => parseAndSetCSV(evt.target.result);
+                    reader.onload = function(evt) {
+                        const lines = evt.target.result.split('\n');
+                        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+                        const parsed = [];
+                        for(let i=1; i<lines.length; i++) {
+                            if(!lines[i].trim()) continue;
+                            const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+                            let obj = {};
+                            headers.forEach((h, idx) => obj[h] = cols[idx] || '');
+                            parsed.push(obj);
+                        }
+                        processImportedCSV(parsed);
+                    };
                     reader.readAsText(file);
                 }
             });
         }
 
-        function extractCategories() {
-            const catMap = {};
-            productsData.forEach(p => {
-                catMap[p.category] = (catMap[p.category] || 0) + 1;
+        function processImportedCSV(data) {
+            productsData = data.map((item, index) => ({
+                ID: item.ID || String(index + 1000),
+                Type: item.Type || 'simple',
+                SKU: item.SKU || `AV-${index + 100}`,
+                Name: item.Name || 'Unnamed Component',
+                Published: item.Published !== undefined ? String(item.Published) : '1',
+                "Is featured?": item["Is featured?"] || '0',
+                "Visibility in catalog": item["Visibility in catalog"] || 'visible',
+                "Short description": item["Short description"] || item.ShortDescription || '',
+                Description: item.Description || item["Short description"] || 'No detailed specifications provided.',
+                Stock: item.Stock !== undefined ? String(item.Stock) : '10',
+                "Weight (g)": item["Weight (g)"] || item.Weight || '0',
+                "Length (mm)": item["Length (mm)"] || item.Length || '0',
+                "Width (mm)": item["Width (mm)"] || item.Width || '0',
+                "Height (mm)": item["Height (mm)"] || item.Height || '0',
+                "Sale price": item["Sale price"] || item.SalePrice || item.Price || '0',
+                "Regular price": item["Regular price"] || item.RegularPrice || '0',
+                Categories: item.Categories || 'Uncategorized',
+                Tags: item.Tags || '',
+                Brands: item.Brands || 'Autovium'
+            }));
+
+            showToast(`Loaded ${productsData.length} components from CSV`);
+            document.getElementById('systemStatusText').innerText = `DB LOADED (${productsData.length} ITEMS)`;
+            renderCatalog();
+        }
+
+        // 3. CATALOG RENDER ENGINE & FILTERS
+        function initFilterListeners() {
+            document.getElementById('searchInput').addEventListener('input', filterAndRender);
+            document.getElementById('stockOnlyToggle').addEventListener('change', filterAndRender);
+            document.getElementById('featuredToggle').addEventListener('change', filterAndRender);
+            document.getElementById('sortSelect').addEventListener('change', filterAndRender);
+            document.getElementById('resetFiltersBtn').addEventListener('click', resetFilters);
+
+            document.getElementById('gridViewBtn').addEventListener('click', () => {
+                currentViewMode = 'grid';
+                document.getElementById('gridViewBtn').className = 'p-1.5 rounded-lg text-accent bg-white/10 transition-colors';
+                document.getElementById('listViewBtn').className = 'p-1.5 rounded-lg text-neutral-400 hover:text-white transition-colors';
+                document.getElementById('productsGrid').classList.remove('hidden');
+                document.getElementById('productsListTable').classList.add('hidden');
             });
-            categoriesList = Object.keys(catMap).map(cat => ({ name: cat, count: catMap[cat] }));
+
+            document.getElementById('listViewBtn').addEventListener('click', () => {
+                currentViewMode = 'list';
+                document.getElementById('listViewBtn').className = 'p-1.5 rounded-lg text-accent bg-white/10 transition-colors';
+                document.getElementById('gridViewBtn').className = 'p-1.5 rounded-lg text-neutral-400 hover:text-white transition-colors';
+                document.getElementById('productsGrid').classList.add('hidden');
+                document.getElementById('productsListTable').classList.remove('hidden');
+            });
         }
 
-        // Helper to get an appropriate icon based on category or name
-        function getCategoryIcon(category, name = '') {
-            const lower = (category + ' ' + name).toLowerCase();
-            if (lower.includes('power') || lower.includes('regulator') || lower.includes('battery')) return 'zap';
-            if (lower.includes('micro') || lower.includes('esp32') || lower.includes('arduino')) return 'cpu';
-            if (lower.includes('sensor') || lower.includes('imu') || lower.includes('tof')) return 'activity';
-            if (lower.includes('motor') || lower.includes('driver') || lower.includes('cnc')) return 'sliders';
-            if (lower.includes('display') || lower.includes('lcd') || lower.includes('oled')) return 'monitor';
-            return 'box';
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('stockOnlyToggle').checked = false;
+            document.getElementById('featuredToggle').checked = false;
+            document.getElementById('sortSelect').value = 'featured';
+            activeCategory = 'all';
+            filterAndRender();
         }
 
-        // Router (Catalog View vs Single Product View)
-        function handleRoute() {
-            const hash = window.location.hash || '#catalog';
-            const container = document.getElementById('app-container');
+        function filterAndRender() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            const stockOnly = document.getElementById('stockOnlyToggle').checked;
+            const featuredOnly = document.getElementById('featuredToggle').checked;
+            const sortMode = document.getElementById('sortSelect').value;
 
-            if (hash.startsWith('#product')) {
-                const params = new URLSearchParams(hash.split('?')[1]);
-                const productId = params.get('id');
-                const product = productsData.find(p => p.id === productId);
-
-                if (product) {
-                    renderProductDetailView(container, product);
-                } else {
-                    renderCatalogView(container);
+            filteredProducts = productsData.filter(item => {
+                if (activeCategory !== 'all' && item.Categories.toLowerCase() !== activeCategory.toLowerCase()) {
+                    return false;
                 }
-            } else {
-                renderCatalogView(container);
-            }
-            lucide.createIcons();
-        }
-
-        // RENDER 1: Catalog Component Search & Filter Matrix
-        function renderCatalogView(container) {
-            const filteredProducts = productsData.filter(p => {
-                const matchesCat = activeCategory === 'All' || p.category === activeCategory;
-                const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                      p.sku.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                      p.tags.toLowerCase().includes(searchQuery.toLowerCase());
-                const matchesStock = !inStockOnly || p.inStock;
-                const matchesFeatured = !featuredOnly || p.isFeatured;
-                return matchesCat && matchesSearch && matchesStock && matchesFeatured;
+                if (stockOnly && parseInt(item.Stock || 0) <= 0) {
+                    return false;
+                }
+                if (featuredOnly && String(item["Is featured?"]) !== '1') {
+                    return false;
+                }
+                if (searchQuery) {
+                    const matchName = item.Name.toLowerCase().includes(searchQuery);
+                    const matchSku = item.SKU.toLowerCase().includes(searchQuery);
+                    const matchCat = item.Categories.toLowerCase().includes(searchQuery);
+                    const matchTags = item.Tags.toLowerCase().includes(searchQuery);
+                    if (!matchName && !matchSku && !matchCat && !matchTags) {
+                        return false;
+                    }
+                }
+                return true;
             });
 
-            container.innerHTML = `
-                <!-- Catalog Header -->
-                <div class="mb-10 text-center md:text-left flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-white/5 pb-8">
-                    <div>
-                        <div class="inline-flex items-center gap-2 glass-panel px-3 py-1 rounded-full text-xs font-mono text-accent mb-3">
-                            <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span> SYSTEM_CATALOG // LIVE_SYNC
-                        </div>
-                        <h1 class="text-4xl md:text-5xl font-display font-black text-white tracking-tight">Component Matrix</h1>
-                        <p class="text-neutral-400 font-light mt-1">Browse and search engineered electronic parts and micro-controllers.</p>
-                    </div>
-
-                    <!-- Search Input Box -->
-                    <div class="w-full md:w-96 relative">
-                        <i data-lucide="search" class="w-4 h-4 text-neutral-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
-                        <input type="text" id="search-bar" value="${searchQuery}" placeholder="Search name, SKU, or tags..." 
-                               class="w-full glass-panel pl-11 pr-4 py-3 rounded-full text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-accent transition-colors font-sans">
-                    </div>
-                </div>
-
-                <!-- Catalog Grid Layout -->
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    <!-- Left Sidebar Filters -->
-                    <aside class="space-y-6">
-                        <!-- Category Filter Card -->
-                        <div class="glass-panel p-6 rounded-3xl">
-                            <h3 class="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 flex items-center justify-between">
-                                Categories <i data-lucide="filter" class="w-3.5 h-3.5 text-accent"></i>
-                            </h3>
-                            <div class="space-y-1">
-                                <button onclick="setCategory('All')" class="w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors flex justify-between items-center ${activeCategory === 'All' ? 'bg-accent/20 text-accent border border-accent/30' : 'text-neutral-400 hover:text-white hover:bg-white/5'}">
-                                    <span>All Components</span>
-                                    <span class="text-xs font-mono px-2 py-0.5 rounded bg-white/5 text-neutral-400">${productsData.length}</span>
-                                </button>
-                                ${categoriesList.map(cat => `
-                                    <button onclick="setCategory('${cat.name}')" class="w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors flex justify-between items-center ${activeCategory === cat.name ? 'bg-accent/20 text-accent border border-accent/30' : 'text-neutral-400 hover:text-white hover:bg-white/5'}">
-                                        <span class="truncate">${cat.name}</span>
-                                        <span class="text-xs font-mono px-2 py-0.5 rounded bg-white/5 text-neutral-400">${cat.count}</span>
-                                    </button>
-                                `).join('')}
-                            </div>
-                        </div>
-
-                        <!-- Availability & Toggle Options -->
-                        <div class="glass-panel p-6 rounded-3xl space-y-4">
-                            <h3 class="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-2">Filters</h3>
-                            <label class="flex items-center justify-between cursor-pointer text-sm text-neutral-300 hover:text-white">
-                                <span>In Stock Only</span>
-                                <input type="checkbox" id="stock-toggle" ${inStockOnly ? 'checked' : ''} onchange="toggleStockOnly(this.checked)" class="accent-emerald-500 w-4 h-4 rounded">
-                            </label>
-                            <label class="flex items-center justify-between cursor-pointer text-sm text-neutral-300 hover:text-white">
-                                <span>Featured Parts</span>
-                                <input type="checkbox" id="featured-toggle" ${featuredOnly ? 'checked' : ''} onchange="toggleFeaturedOnly(this.checked)" class="accent-emerald-500 w-4 h-4 rounded">
-                            </label>
-                        </div>
-                    </aside>
-
-                    <!-- Main Components Presentation View -->
-                    <section class="lg:col-span-3 space-y-6">
-                        <!-- Top Toolbar -->
-                        <div class="flex justify-between items-center glass-panel px-6 py-3 rounded-2xl text-xs font-mono text-neutral-400">
-                            <div>RESULTS: <span class="text-accent">${filteredProducts.length}</span> UNITS FOUND</div>
-                            <div class="flex items-center gap-2">
-                                <button onclick="setViewMode('grid')" class="p-1.5 rounded-lg ${viewMode === 'grid' ? 'bg-accent/20 text-accent' : 'hover:text-white'}">
-                                    <i data-lucide="grid" class="w-4 h-4"></i>
-                                </button>
-                                <button onclick="setViewMode('list')" class="p-1.5 rounded-lg ${viewMode === 'list' ? 'bg-accent/20 text-accent' : 'hover:text-white'}">
-                                    <i data-lucide="list" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        ${filteredProducts.length === 0 ? `
-                            <div class="glass-panel p-16 rounded-3xl text-center space-y-4">
-                                <i data-lucide="alert-circle" class="w-12 h-12 text-highlight mx-auto"></i>
-                                <h3 class="text-xl font-display font-bold text-white">No Components Found</h3>
-                                <p class="text-sm text-neutral-400">Try adjusting your search query or reset category filters.</p>
-                            </div>
-                        ` : viewMode === 'grid' ? `
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                ${filteredProducts.map(p => {
-                                    const iconName = getCategoryIcon(p.category, p.name);
-                                    return `
-                                        <div class="glass-panel rounded-3xl p-5 flex flex-col justify-between group transition-all duration-300">
-                                            <div>
-                                                <!-- Icon/Schematic Banner instead of Image -->
-                                                <div class="h-44 rounded-2xl overflow-hidden bg-gradient-to-br from-black/80 to-surface border border-white/5 relative mb-4 flex items-center justify-center group-hover:border-accent/30 transition-all">
-                                                    <div class="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                                    <div class="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
-                                                        <i data-lucide="${iconName}" class="w-8 h-8"></i>
-                                                    </div>
-                                                    <div class="absolute top-3 left-3 bg-base/80 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10 text-[10px] font-mono text-neutral-300">
-                                                        ${p.sku}
-                                                    </div>
-                                                    ${p.isFeatured ? `
-                                                        <div class="absolute top-3 right-3 bg-highlight/20 border border-highlight/40 text-highlight backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-mono">
-                                                            FEATURED
-                                                        </div>
-                                                    ` : ''}
-                                                </div>
-
-                                                <div class="text-[11px] font-mono text-accent mb-1 uppercase tracking-wider">${p.category}</div>
-                                                <h4 class="font-display font-bold text-lg text-white mb-2 leading-snug group-hover:text-accent transition-colors">${p.name}</h4>
-                                                <p class="text-xs text-neutral-400 line-clamp-2 leading-relaxed mb-4 whitespace-pre-line">${p.shortDescription}</p>
-                                            </div>
-
-                                            <div class="pt-4 border-t border-white/5 flex items-center justify-between">
-                                                <div>
-                                                    <span class="text-xs font-mono text-neutral-500">PRICE</span>
-                                                    <div class="text-base font-display font-bold text-white">LKR ${p.salePrice || p.regularPrice || '0.00'}</div>
-                                                </div>
-                                                <a href="#product?id=${p.id}" class="px-4 py-2 bg-white/10 hover:bg-accent hover:text-base text-white text-xs font-mono font-bold rounded-xl transition-all flex items-center gap-1">
-                                                    SPECS <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        ` : `
-                            <!-- List View -->
-                            <div class="glass-panel rounded-3xl divide-y divide-white/5 overflow-hidden">
-                                ${filteredProducts.map(p => {
-                                    const iconName = getCategoryIcon(p.category, p.name);
-                                    return `
-                                        <div class="p-4 flex items-center justify-between gap-4 hover:bg-white/5 transition-colors">
-                                            <div class="flex items-center gap-4">
-                                                <div class="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent flex-shrink-0">
-                                                    <i data-lucide="${iconName}" class="w-6 h-6"></i>
-                                                </div>
-                                                <div>
-                                                    <span class="text-[10px] font-mono text-accent">${p.sku}</span>
-                                                    <h4 class="font-display font-bold text-white text-sm">${p.name}</h4>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center gap-6">
-                                                <div class="text-right">
-                                                    <div class="text-sm font-display font-bold text-white">LKR ${p.salePrice || p.regularPrice || '0.00'}</div>
-                                                    <span class="text-[10px] font-mono ${p.inStock ? 'text-accent' : 'text-neutral-500'}">${p.inStock ? 'IN STOCK' : 'OUT OF STOCK'}</span>
-                                                </div>
-                                                <a href="#product?id=${p.id}" class="px-4 py-2 glass-panel text-xs font-mono text-white hover:text-accent rounded-xl">View</a>
-                                            </div>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        `}
-                    </section>
-                </div>
-            `;
-
-            // Setup search event listener
-            document.getElementById('search-bar').addEventListener('input', (e) => {
-                searchQuery = e.target.value;
-                renderCatalogView(container);
-                lucide.createIcons();
+            // Sorting Engine
+            filteredProducts.sort((a, b) => {
+                const priceA = parseFloat(a["Sale price"] || a["Regular price"] || 0);
+                const priceB = parseFloat(b["Sale price"] || b["Regular price"] || 0);
+                if (sortMode === 'price-asc') return priceA - priceB;
+                if (sortMode === 'price-desc') return priceB - priceA;
+                if (sortMode === 'name-asc') return a.Name.localeCompare(b.Name);
+                return (b["Is featured?"] || 0) - (a["Is featured?"] || 0);
             });
+
+            renderCatalog();
         }
 
-        // RENDER 2: Dedicated Product Specifications View Page with newline preservation
-        function renderProductDetailView(container, product) {
-            const iconName = getCategoryIcon(product.category, product.name);
+        function renderCatalog() {
+            buildCategoriesSidebar();
             
-            // Format description by converting \n into HTML line breaks or bullet formatting
-            const formattedDescription = (product.description || product.shortDescription || 'No detailed specifications provided.')
-                .split('\n')
-                .map(line => line.trim().startsWith('•') ? `<li class="ml-4 list-disc">${line.replace('•', '').trim()}</li>` : `<p class="mb-3">${line}</p>`)
-                .join('');
+            document.getElementById('totalItemsCount').innerText = filteredProducts.length;
+            const gridContainer = document.getElementById('productsGrid');
+            const tableBody = document.getElementById('productsTableBody');
+            const emptyState = document.getElementById('emptyState');
 
-            container.innerHTML = `
-                <!-- Breadcrumbs -->
-                <div class="mb-8 flex items-center gap-2 text-xs font-mono text-neutral-400">
-                    <a href="#catalog" class="hover:text-accent transition-colors flex items-center gap-1">
-                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> CATALOG
-                    </a>
-                    <span>/</span>
-                    <span class="text-neutral-500">${product.category}</span>
-                    <span>/</span>
-                    <span class="text-accent truncate">${product.name}</span>
-                </div>
+            if (filteredProducts.length === 0) {
+                gridContainer.innerHTML = '';
+                tableBody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-                    <!-- Icon Schematic Card View (No Photos) -->
-                    <div class="glass-panel p-8 rounded-3xl relative overflow-hidden flex flex-col items-center justify-center text-center">
-                        <div class="absolute inset-0 bg-gradient-to-b from-accent/5 to-transparent pointer-events-none"></div>
-                        <div class="w-40 h-40 rounded-3xl bg-accent/10 border border-accent/30 flex items-center justify-center text-accent my-12 shadow-[0_0_40px_rgba(16,185,129,0.2)]">
-                            <i data-lucide="${iconName}" class="w-20 h-20"></i>
+            emptyState.classList.add('hidden');
+
+            // Render Grid HTML (Icon Based Tech Badges instead of photos)
+            gridContainer.innerHTML = filteredProducts.map(p => {
+                const stockNum = parseInt(p.Stock || 0);
+                const inStock = stockNum > 0;
+                const salePrice = p["Sale price"] ? `LKR ${parseFloat(p["Sale price"]).toLocaleString()}` : '';
+                const regPrice = p["Regular price"] ? `LKR ${parseFloat(p["Regular price"]).toLocaleString()}` : '';
+                const iconName = getComponentIcon(p.Categories, p.Name);
+                
+                return `
+                    <div class="glass-panel glass-panel-interactive rounded-2xl p-5 flex flex-col justify-between space-y-4 relative group">
+                        
+                        <!-- Top Badges -->
+                        <div class="flex items-center justify-between gap-2 z-10">
+                            <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-neutral-400 uppercase tracking-wider">${escapeHtml(p.SKU)}</span>
+                            
+                            ${inStock 
+                                ? `<span class="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-accent px-2 py-0.5 rounded bg-accent/10 border border-accent/20"><span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span> ${stockNum} IN STOCK</span>`
+                                : `<span class="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-rose-400 px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20">OUT OF STOCK</span>`
+                            }
                         </div>
-                        <div class="w-full pt-6 border-t border-white/5 flex justify-between items-center font-mono text-xs text-neutral-400">
-                            <span>SKU: <strong class="text-white">${product.sku}</strong></span>
-                            <span>BRAND: <strong class="text-white">${product.brand}</strong></span>
-                        </div>
-                    </div>
 
-                    <!-- Details & Specifications Panel -->
-                    <div class="space-y-8">
-                        <div>
-                            <div class="inline-block px-3 py-1 rounded-md bg-accent/10 border border-accent/20 text-accent font-mono text-xs mb-3">
-                                ${product.category}
+                        <!-- Technical Schematics Graphic Container (Icon Based) -->
+                        <div class="relative h-44 rounded-xl bg-black/60 border border-white/10 flex flex-col items-center justify-center p-4 overflow-hidden group-hover:border-accent/30 transition-colors">
+                            <div class="absolute inset-0 grid-pattern opacity-40"></div>
+                            
+                            <div class="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/30 flex items-center justify-center text-accent shadow-lg shadow-accent/10 group-hover:scale-110 transition-transform duration-500 relative z-10">
+                                <i data-lucide="${iconName}" class="w-8 h-8"></i>
                             </div>
-                            <h1 class="text-3xl md:text-4xl font-display font-bold text-white mb-4 leading-tight">${product.name}</h1>
-                            <p class="text-neutral-300 leading-relaxed text-sm whitespace-pre-line">${product.shortDescription}</p>
+
+                            <span class="relative z-10 mt-3 font-mono text-[9px] text-neutral-500 tracking-widest uppercase">${escapeHtml(p.Brands || 'AUTOVIUM HARDWARE')}</span>
                         </div>
 
-                        <!-- Price & Stock Indicator -->
-                        <div class="glass-panel p-6 rounded-2xl flex items-center justify-between">
-                            <div>
-                                <span class="text-xs font-mono text-neutral-400 block">UNIT PRICE</span>
-                                <div class="text-3xl font-display font-black text-white">
-                                    LKR ${product.salePrice || product.regularPrice || '0.00'}
-                                    ${product.salePrice ? `<span class="text-sm line-through text-neutral-500 ml-2">LKR ${product.regularPrice}</span>` : ''}
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono ${product.inStock ? 'bg-accent/10 border border-accent/30 text-accent' : 'bg-red-500/10 border border-red-500/30 text-red-400'}">
-                                    <span class="w-2 h-2 rounded-full ${product.inStock ? 'bg-accent' : 'bg-red-500'}"></span>
-                                    ${product.inStock ? `IN STOCK (${product.stockCount} AVAILABLE)` : 'BACKORDER'}
-                                </span>
-                            </div>
+                        <!-- Product Basic Info -->
+                        <div class="space-y-1.5">
+                            <span class="text-[11px] font-mono text-neutral-400 uppercase tracking-wider block">${escapeHtml(p.Categories)}</span>
+                            <h4 class="font-display font-bold text-white text-base line-clamp-2 leading-snug group-hover:text-accent transition-colors">
+                                ${escapeHtml(p.Name)}
+                            </h4>
+                            <p class="text-xs text-neutral-400 line-clamp-2 font-light leading-relaxed">
+                                ${stripHtml(p["Short description"] || p.Description)}
+                            </p>
                         </div>
 
-                        <!-- Physical Dimensions Matrix -->
-                        <div class="glass-panel p-6 rounded-2xl space-y-3">
-                            <h3 class="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-2">Physical Specifications</h3>
-                            <div class="grid grid-cols-4 gap-2 text-center">
-                                <div class="p-3 bg-white/5 rounded-xl border border-white/5">
-                                    <span class="block text-[10px] font-mono text-neutral-500">WEIGHT</span>
-                                    <span class="text-sm font-mono text-white">${product.weight} g</span>
-                                </div>
-                                <div class="p-3 bg-white/5 rounded-xl border border-white/5">
-                                    <span class="block text-[10px] font-mono text-neutral-500">LENGTH</span>
-                                    <span class="text-sm font-mono text-white">${product.length} mm</span>
-                                </div>
-                                <div class="p-3 bg-white/5 rounded-xl border border-white/5">
-                                    <span class="block text-[10px] font-mono text-neutral-500">WIDTH</span>
-                                    <span class="text-sm font-mono text-white">${product.width} mm</span>
-                                </div>
-                                <div class="p-3 bg-white/5 rounded-xl border border-white/5">
-                                    <span class="block text-[10px] font-mono text-neutral-500">HEIGHT</span>
-                                    <span class="text-sm font-mono text-white">${product.height} mm</span>
-                                </div>
+                        <!-- Price & Action Button -->
+                        <div class="pt-3 border-t border-white/10 flex items-center justify-between">
+                            <div class="flex flex-col font-mono">
+                                <span class="text-base font-bold text-accent">${salePrice || regPrice}</span>
+                                ${salePrice && regPrice ? `<span class="text-[10px] text-neutral-500 line-through">${regPrice}</span>` : ''}
                             </div>
-                        </div>
-
-                        <!-- Full Technical Description with Newline & Bullet Support -->
-                        <div class="glass-panel p-6 rounded-2xl space-y-3">
-                            <h3 class="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-2">Technical Overview & Specs</h3>
-                            <div class="text-neutral-300 text-sm leading-relaxed space-y-2">
-                                ${formattedDescription}
-                            </div>
-                        </div>
-
-                        <!-- Inquiry & Contact Button -->
-                        <div class="pt-4 flex gap-4">
-                            <a href="mailto:admin@autovium.com?subject=Inquiry for ${encodeURIComponent(product.name)} [SKU: ${product.sku}]" class="flex-1 py-4 bg-white hover:bg-accent text-base hover:text-base font-display font-bold rounded-2xl transition-all text-center flex items-center justify-center gap-2">
-                                <i data-lucide="mail" class="w-4 h-4"></i> Request Quote / Order
+                            
+                            <a href="#product?id=${p.ID}" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-accent border border-white/10 hover:border-accent text-xs font-mono font-bold text-white hover:text-base transition-all duration-300 flex items-center gap-1">
+                                Specs <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
                             </a>
                         </div>
                     </div>
-                </div>
+                `;
+            }).join('');
+
+            // Render Table HTML (Icon Based)
+            tableBody.innerHTML = filteredProducts.map(p => {
+                const stockNum = parseInt(p.Stock || 0);
+                const salePrice = p["Sale price"] ? `LKR ${parseFloat(p["Sale price"]).toLocaleString()}` : '';
+                const iconName = getComponentIcon(p.Categories, p.Name);
+                
+                return `
+                    <tr class="hover:bg-white/5 transition-colors">
+                        <td class="p-4 flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
+                                <i data-lucide="${iconName}" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-white font-sans">${escapeHtml(p.Name)}</div>
+                                <div class="text-[10px] text-accent font-mono">${escapeHtml(p.SKU)}</div>
+                            </div>
+                        </td>
+                        <td class="p-4 text-neutral-400 font-mono">${escapeHtml(p.Categories)}</td>
+                        <td class="p-4">
+                            ${stockNum > 0 
+                                ? `<span class="text-accent font-bold">${stockNum} Available</span>` 
+                                : `<span class="text-rose-400">Out of stock</span>`
+                            }
+                        </td>
+                        <td class="p-4 font-bold text-white">${salePrice}</td>
+                        <td class="p-4 text-right">
+                            <a href="#product?id=${p.ID}" class="px-3 py-1 rounded bg-accent/10 border border-accent/30 text-accent hover:bg-accent hover:text-base transition-colors">View</a>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        }
+
+        // Sidebar Dynamic Categories
+        function buildCategoriesSidebar() {
+            const container = document.getElementById('categoryFilterContainer');
+            const categoriesMap = {};
+
+            productsData.forEach(p => {
+                const cat = p.Categories || 'Uncategorized';
+                categoriesMap[cat] = (categoriesMap[cat] || 0) + 1;
+            });
+
+            const allCount = productsData.length;
+
+            let html = `
+                <button onclick="selectCategory('all')" class="w-full text-left px-3 py-1.5 rounded-lg text-xs font-mono flex items-center justify-between transition-colors ${activeCategory === 'all' ? 'bg-accent/20 border border-accent/40 text-accent font-bold' : 'text-neutral-400 hover:bg-white/5 hover:text-white'}">
+                    <span>ALL CATEGORIES</span>
+                    <span class="text-[10px] opacity-70">${allCount}</span>
+                </button>
             `;
+
+            Object.keys(categoriesMap).sort().forEach(cat => {
+                const isActive = activeCategory.toLowerCase() === cat.toLowerCase();
+                html += `
+                    <button onclick="selectCategory('${escapeHtml(cat)}')" class="w-full text-left px-3 py-1.5 rounded-lg text-xs font-mono flex items-center justify-between transition-colors ${isActive ? 'bg-accent/20 border border-accent/40 text-accent font-bold' : 'text-neutral-400 hover:bg-white/5 hover:text-white'}">
+                        <span class="truncate pr-2">${escapeHtml(cat)}</span>
+                        <span class="text-[10px] opacity-70">${categoriesMap[cat]}</span>
+                    </button>
+                `;
+            });
+
+            container.innerHTML = html;
         }
 
-        // Helper Controllers
-        function setCategory(cat) {
+        function selectCategory(cat) {
             activeCategory = cat;
-            handleRoute();
+            filterAndRender();
         }
 
-        function setViewMode(mode) {
-            viewMode = mode;
-            handleRoute();
+        // 4. PRODUCT DETAIL PAGE RENDER ENGINE
+        function renderProductDetail(p) {
+            document.getElementById('detailCategoryBreadcrumb').innerText = p.Categories || 'Hardware';
+            document.getElementById('detailSkuBreadcrumb').innerText = p.SKU;
+            
+            // Set Component Icon Graphic
+            const iconName = getComponentIcon(p.Categories, p.Name);
+            const detailIconEl = document.getElementById('detailIcon');
+            detailIconEl.setAttribute('data-lucide', iconName);
+            document.getElementById('detailGraphicId').innerText = p.SKU;
+
+            document.getElementById('detailSku').innerText = p.SKU;
+            document.getElementById('detailCategory').innerText = p.Categories || 'General';
+            document.getElementById('detailTitle').innerText = p.Name;
+            
+            const salePrice = p["Sale price"] ? `LKR ${parseFloat(p["Sale price"]).toLocaleString()}` : '';
+            const regPrice = p["Regular price"] ? `LKR ${parseFloat(p["Regular price"]).toLocaleString()}` : '';
+
+            document.getElementById('detailSalePrice').innerText = salePrice || regPrice;
+            document.getElementById('detailRegularPrice').innerText = salePrice && regPrice ? regPrice : '';
+
+            document.getElementById('detailShortDesc').innerHTML = p["Short description"] || p.Description;
+            document.getElementById('detailFullDesc').innerHTML = p.Description || p["Short description"];
+
+            // Stock Status
+            const stockNum = parseInt(p.Stock || 0);
+            const stockBadge = document.getElementById('detailStockBadge');
+            const stockText = document.getElementById('detailStockText');
+
+            if (stockNum > 0) {
+                stockBadge.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-mono font-bold border border-accent/40 bg-accent/10 text-accent";
+                stockText.innerText = `IN STOCK (${stockNum} units ready for immediate dispatch)`;
+            } else {
+                stockBadge.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-mono font-bold border border-rose-500/40 bg-rose-500/10 text-rose-400";
+                stockText.innerText = `OUT OF STOCK (Available for Backorder)`;
+            }
+
+            // Featured Badge
+            const featBadge = document.getElementById('detailFeaturedBadge');
+            if (String(p["Is featured?"]) === '1') {
+                featBadge.classList.remove('hidden');
+            } else {
+                featBadge.classList.add('hidden');
+            }
+
+            // Dimension Parameters Table
+            document.getElementById('dimWeight').innerText = p["Weight (g)"] ? `${p["Weight (g)"]} g` : '--';
+            document.getElementById('dimLength').innerText = p["Length (mm)"] ? `${p["Length (mm)"]} mm` : '--';
+            document.getElementById('dimWidth').innerText = p["Width (mm)"] ? `${p["Width (mm)"]} mm` : '--';
+            document.getElementById('dimHeight').innerText = p["Height (mm)"] ? `${p["Height (mm)"]} mm` : '--';
+
+            // Render Tags
+            const tagsContainer = document.getElementById('detailTags');
+            if (p.Tags) {
+                const tagsList = p.Tags.split(',').map(t => t.trim());
+                tagsContainer.innerHTML = tagsList.map(t => `
+                    <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-[11px] font-mono text-neutral-300">#${escapeHtml(t)}</span>
+                `).join('');
+            } else {
+                tagsContainer.innerHTML = '<span class="text-xs font-mono text-neutral-500">No tags associated</span>';
+            }
+
+            // Wire Inquiry Trigger Modal
+            document.getElementById('inquireBtn').onclick = () => openInquiryModal(p);
+
+            if (window.lucide) {
+                lucide.createIcons();
+            }
         }
 
-        function toggleStockOnly(val) {
-            inStockOnly = val;
-            handleRoute();
+        // 5. INQUIRY MODAL LOGIC
+        function initModalListeners() {
+            const modal = document.getElementById('inquiryModal');
+            const closeBtn = document.getElementById('closeModalBtn');
+
+            closeBtn.addEventListener('click', () => {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('opacity-0', 'pointer-events-none');
+                }
+            });
         }
 
-        function toggleFeaturedOnly(val) {
-            featuredOnly = val;
-            handleRoute();
+        function openInquiryModal(product) {
+            const modal = document.getElementById('inquiryModal');
+            document.getElementById('modalItemTitle').innerText = product.Name;
+            document.getElementById('modalItemSku').innerText = product.SKU;
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function handleInquirySubmit(e) {
+            e.preventDefault();
+            const modal = document.getElementById('inquiryModal');
+            const sku = document.getElementById('modalItemSku').innerText;
+            const title = document.getElementById('modalItemTitle').innerText;
+            const qty = document.getElementById('modalQty').value;
+            const userEmail = document.getElementById('modalUserEmail').value;
+            const notes = document.getElementById('modalNotes').value;
+
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            showToast('Technical inquiry prepared. Opening email client...');
+
+            const subject = encodeURIComponent(`Inquiry for ${title} [SKU: ${sku}]`);
+            const body = encodeURIComponent(`Hello Autovium Technologies Team,\n\nI would like to request pricing and specs for:\nItem: ${title}\nSKU: ${sku}\nQuantity Required: ${qty}\nUser Email: ${userEmail}\n\nAdditional Notes:\n${notes}\n\nBest regards,`);
+
+            window.location.href = `mailto:admin@autovium.com?subject=${subject}&body=${body}`;
+        }
+
+        function downloadMockDatasheet() {
+            showToast('Downloading manufacturer technical datasheet PDF...');
+        }
+
+        // Utility Helpers
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+
+        function stripHtml(html) {
+            const tmp = document.createElement("DIV");
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || "";
+        }
+
+        function escapeHtml(str) {
+            if(!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
     </script>
 </body>
 </html>
-"""
-
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(index_html_code)
-
-print("index.html updated successfully.")
